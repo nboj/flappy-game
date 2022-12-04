@@ -78,10 +78,8 @@ class Bird extends FlappyState {
 		// originally, the bird game-object had a circle collider. However, Phaser's implementation of this
 		// certain collider is somewhat poorly designed and will occasionally fall through some pipes.
 		// Either that, or I am implementing it improperly which is why it is now using a box collider.
-		// this.bird.body.setCircle(Math.round(this.bird.body.sourceWidth / 2.1), 50, -50)
+		this.bird.body.setCircle(Math.round(this.bird.body.sourceWidth / 2.1), 50, -50)
 		
-		this.bird.body.setSize(this.bird.body.width - 100, this.bird.body.height - 200)
-		this.bird.body.setOffset(100, 100)
 		this.bird.body.bounce.x = 0.2;
 		this.bird.body.bounce.y = 0.2;
 		this.bird.body.gravity.y = 2800
