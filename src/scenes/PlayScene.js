@@ -235,7 +235,20 @@ class PlayScene extends Phaser.Scene {
      */
     handleCollisions() {
         this.pipeManager.pipes.map(pipe => {
-            this.physics.add.collider(this.bird.bird, pipe.pipeGroup, (e) => {
+            this.physics.add.collider(this.bird.bird, pipe.pipeGroup, (bird, pipe) => {
+                console.debug('Bird overlapX=%.1f, overlapY=%.1f, overlapR=%.1f, vx=%.1f, vy=%.1f', bird.body.overlapX, bird.body.overlapY, bird.body.overlapR, bird.body.velocity.x, bird.body.velocity.y)
+                const intersects = this.physics.world.intersects(bird.body, pipe.body)
+                // This will probably fail if overlapR > 0
+                // If it fails when overlapR === 0 then you might increase overlapBias
+                console.assert(!intersects, 'Bird should not intersect pipe after collision')
+                if (intersects && bird.body.overlapR > 0) {
+                    const separation = bird.body.velocity.clone().setLength(bird.body.overlapR)
+                    bird.body.position.add(separation)
+                    bird.body.updateCenter()
+                    console.debug('Reseparate', separation.x, separation.y)
+                    // This should pass if the reseparation succeeded
+                    console.assert(!this.physics.world.intersects(bird.body, pipe.body), 'Bird should not intersect pipe after reseparation')
+                }
                 window.dispatchEvent(new Event('death'))
             }, null, this)
             this.physics.add.overlap(this.bird.bird, pipe.checkpoint, () => {
