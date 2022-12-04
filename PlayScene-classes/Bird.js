@@ -138,6 +138,7 @@ class Bird extends FlappyState {
         } else if (super.getCurrentState() === States.DEAD) {
         } else if (super.getCurrentState() === States.IDLE) {
 		}
+		this.bird.body.debugBodyColor = this.bird.body.touching.none ? 0x0000ff : 0xffff00
     }
 	
 	/**
