@@ -46,7 +46,13 @@ class PipeManager extends FlappyState {
 		// this.changeOffsetDelay = changeOffsetDelay
 		
 		this.checkRecycleDelayStart = 0
-		this.checkRecycleDelay = 1000
+		this.checkRecycleDelay = 100
+
+		// this will calculate the number of pipes to draw based on the screen width and the horizontal offset. It adds
+		// 2 because it needs one extra to fit the width but also another one as a sort of padding in case the next pipe
+		// doesn't recycle exactly on time.
+		this.pipeCount = Math.ceil(this.scene.game.canvas.width / (finalHorizontalOffset + 80)) + 2
+		console.log(this.pipeCount)
 		this.anims = new Array(pipeCount)
 		if (this.difficulty === Difficulty.EASY) {
 			this.horizontalDecrementAmount = 5
@@ -184,21 +190,8 @@ class PipeManager extends FlappyState {
 	 */
 	handlePipePool() {
 		// mapping through each PipeGroup object
-		// for (let i = 0; i < this.pipes.length; i++) {
-		// 	const pipe = this.pipes[i]
-		// 	// current pipe's position
-		// 	const pos = pipe.getPosition()
-		//
-		// 	// current pipe's width
-		// 	const width = pipe.getWidth()
-		//
-		// 	// if the pipe is beyond the canvas on the left side,
-		// 	// the pipe will be repositioned at the end of all the other pipes
-		// 	if (pos.x + width / 2 <= 0) {
-		// 		this.handleResetPipe(pipe, i)
-		// 	}
-		// }
-		this.pipes.map((pipe, index) => {
+		for (let i = 0; i < this.pipes.length; i++) {
+			const pipe = this.pipes[i]
 			// current pipe's position
 			const pos = pipe.getPosition()
 
@@ -208,9 +201,23 @@ class PipeManager extends FlappyState {
 			// if the pipe is beyond the canvas on the left side,
 			// the pipe will be repositioned at the end of all the other pipes
 			if (pos.x + width / 2 <= 0) {
-				this.handleResetPipe(pipe, index)
+				this.handleResetPipe(pipe, i)
 			}
-		})
+		}
+		// this.pipes.map((pipe, index) => {
+		// 	// current pipe's position
+		// 	const pos = pipe.getPosition()
+		//
+		// 	// current pipe's width
+		// 	const width = pipe.getWidth()
+		//
+		// 	// if the pipe is beyond the canvas on the left side,
+		// 	// the pipe will be repositioned at the end of all the other pipes
+		// 	if (pipe.topPipe.x <= 0) {
+		// 	console.log(pipe.topPipe.x)
+		// 		this.handleResetPipe(pipe, index)
+		// 	}
+		// })
 	}
 	
 	/**

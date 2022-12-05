@@ -47,18 +47,33 @@ class PlayScene extends Phaser.Scene {
      * it first loading the asset.
      */
     preload() {
+        const config = {
+            pipeCount: 8,
+            velocityX: -this.velocity,
+            difficulty: this.difficulty
+        }
         if (this.difficulty === Difficulty.EASY) {
             this.velocity = 170
-            this.pipeManager = new PipeManager(this, {pipeCount: 12, velocityX: -this.velocity, finalHorizontalOffset: 200, verticalOffset: 220, difficulty: this.difficulty})
+            config.finalHorizontalOffset = 200
+            config.verticalOffset = 220
+            this.pipeManager = new PipeManager(this, config)
         } else if (this.difficulty === Difficulty.MEDIUM) {
             this.velocity = 200
-            this.pipeManager = new PipeManager(this, {pipeCount: 12, velocityX: -this.velocity, finalHorizontalOffset: 250, verticalOffset: 190, difficulty: this.difficulty})
+            config.finalHorizontalOffset = 250
+            config.verticalOffset = 190
+            this.pipeManager = new PipeManager(this, config)
         } else if (this.difficulty === Difficulty.HARD) {
             this.velocity = 200
-            this.pipeManager = new PipeManager(this, {pipeCount: 12, velocityX: -this.velocity, finalHorizontalOffset: 300, horizontalOffset: 350, verticalOffset: 180, difficulty: this.difficulty})
+            config.finalHorizontalOffset = 200
+            config.verticalOffset = 220
+            config.horizontalOffset = 350
+            this.pipeManager = new PipeManager(this, config)
         } else {
             this.velocity = 300
-            this.pipeManager = new PipeManager(this, {pipeCount: 12, velocityX: -this.velocity, finalHorizontalOffset: 270, horizontalOffset: 300, verticalOffset: 200, difficulty: this.difficulty})
+            config.finalHorizontalOffset = 270
+            config.verticalOffset = 200
+            config.horizontalOffset = 300
+            this.pipeManager = new PipeManager(this, config)
         }
         // object instantiation
         this.bird = new Bird(this)
@@ -123,8 +138,8 @@ class PlayScene extends Phaser.Scene {
         this.handleCollisions()
     
         /** dev only */
-        // this.bird.enableGodMode()
-        
+        this.bird.enableGodMode()
+
         // Hide the loading overlay
         eventsCenter.emit('loaded')
     }
@@ -179,8 +194,8 @@ class PlayScene extends Phaser.Scene {
         // calling update methods
         this.bird.update(time, delta)
         this.pipeManager.update(time, delta)
-        this.cityscape.update()
-        this.floor.update()
+        this.cityscape.update(time, delta)
+        this.floor.update(time, delta)
         this.cloudManager.update()
         
         if (this.currentState === States.DEAD) {

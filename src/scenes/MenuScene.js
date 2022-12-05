@@ -317,8 +317,8 @@ class MenuScene extends Phaser.Scene {
 	 */
 	update(time, delta) {
 		if (this.floor.floor && this.background.buildings) {
-			this.floor.update()
-			this.background.update()
+			this.floor.update(time, delta)
+			this.background.update(time, delta)
 		}
 	}
 	

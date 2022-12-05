@@ -149,18 +149,18 @@ class Backdrop extends FlappyState {
 	 * This method will update the tile's x position for the trees, buildings, and background.
 	 * Depending on how big the number added to the x value is, will determine how fast they move.
 	 */
-	updateTilePositions() {
-		this.background.tilePositionX += this.velocity * 0.001
-		this.buildings.tilePositionX += this.velocity * 0.002
-		this.trees.tilePositionX += this.velocity * 0.0035
+	updateTilePositions(delta) {
+		this.background.tilePositionX += this.velocity * 0.0001 * delta
+		this.buildings.tilePositionX += this.velocity * 0.0002 * delta
+		this.trees.tilePositionX += this.velocity * 0.00035 * delta
 	}
 	
 	/**
 	 * This will be updating the tile position for the cityscape if the state is not PAUSED
 	 */
-	update() {
+	update(time, delta) {
 		if (this.currentState === States.IDLE || this.currentState === States.RUNNING) {
-			this.updateTilePositions()
+			this.updateTilePositions(delta)
 		} else if (this.currentState === States.PAUSED) {}
 	}
 	

@@ -91,11 +91,11 @@ class Floor extends FlappyState {
 	 * It calls it separately in IDLE and RUNNING in case future implementations required different
 	 * logic or velocities for each state.
 	 */
-	update() {
+	update(time, delta) {
 		if (this.currentState === States.IDLE) {
-			this.floor.tilePositionX += this.velocityToTilePosition()
+			this.floor.tilePositionX += this.velocityToTilePosition(delta)
 		} else if (this.currentState === States.RUNNING) {
-			this.floor.tilePositionX += this.velocityToTilePosition()
+			this.floor.tilePositionX += this.velocityToTilePosition(delta)
 		} else if (this.currentState === States.PAUSED) {
 		
 		}
@@ -106,8 +106,8 @@ class Floor extends FlappyState {
 	 * at the same speed that the physics animatets the moving pipes.
 	 * @returns {number} - new tile position
 	 */
-	velocityToTilePosition() {
-		return this.velocity / 59
+	velocityToTilePosition(delta) {
+		return this.velocity * delta / 1000
 	}
 	
 	/**
