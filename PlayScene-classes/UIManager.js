@@ -1,4 +1,7 @@
 import FlappyState from "./FlappyState";
+import Utils from "../helper-classes/Utils";
+import eventsCenter from "./EventsCenter";
+import {Difficulty} from "../enums/States";
 
 const States = {
 	IDLE: 0,
@@ -7,15 +10,25 @@ const States = {
 }
 
 class UIManager extends FlappyState {
-	constructor(scene) {
+	constructor(scene, difficulty) {
 		super(States.IDLE)
-		
 		this.scene = scene
+		this.difficulty = difficulty
 		this.score = 0
 		this.highScore = 0
-		this.scoreText = null
-		this.highScoreText = null
+		// this.scoreText = null
+		// this.highScoreText = null
 		this.startPos = null
+		this.depth = 2000
+		
+		this.buttonSize = {
+			width: 195,
+			height: 61
+		}
+		this.menuSize = {
+			width: 348,
+			height: 540
+		}
 		
 		this.controlsDialogue = null
 		this.tweens = {
@@ -26,9 +39,22 @@ class UIManager extends FlappyState {
 	}
 	
 	preload() {
-		this.scene.load.image('star-particle', '/assets/star-particle.png')
 		window.addEventListener('checkpoint', () => {
 			this.addPoint()
+		})
+		this.scene.load.image('star-particle', '/assets/star-particle.png')
+		this.scene.load.image('death-menu', '/assets/death-menu.png')
+		this.scene.load.spritesheet('restart-button', 'assets/restart-button.png', {
+			startFrame: 0,
+			endFrame: 1,
+			frameHeight: this.buttonSize.height,
+			frameWidth: this.buttonSize.width
+		})
+		this.scene.load.spritesheet('menu-button', 'assets/menu-button.png', {
+			startFrame: 0,
+			endFrame: 1,
+			frameHeight: this.buttonSize.height,
+			frameWidth: this.buttonSize.width
 		})
 	}
 	
@@ -37,24 +63,28 @@ class UIManager extends FlappyState {
 			x: this.scene.game.canvas.width / 2,
 			y: this.scene.game.canvas.height / 4
 		}
-		this.scoreText = this.scene.add.text(this.startPos.x, this.startPos.y, '', {
+		this.scoreText = this.scene.add.text(this.startPos.x, this.startPos.y, 'a', {
 			fontFamily: 'FlappyFont',
 			fontSize: '100px',
 			strokeThickness: 5,
 			stroke: 'black'
 		})
-		this.scoreText.depth = 2000
+		this.scoreText.depth = this.depth
 		this.scoreText.setOrigin(0.5, 0.5)
 		this.updateScoreText()
 		
-		this.highScoreText = this.scene.add.text(this.startPos.x, this.startPos.y, '', {
+		this.highScoreText = this.scene.add.text(this.startPos.x, this.startPos.y, 'a', {
 			fontFamily: 'FlappyFont',
 			fontSize: '50px',
 			strokeThickness: 5,
 			stroke: 'black'
 		})
-		this.highScoreText.depth = 2000
+		this.highScoreText.depth = this.depth
 		this.highScoreText.setOrigin(0.5, 0.5)
+		this.scoreSize = {
+			width: this.scoreText.displayWidth,
+			height: this.scoreText.displayHeight
+		}
 		this.updateHighScoreText()
 	}
 	
@@ -63,42 +93,97 @@ class UIManager extends FlappyState {
 			fontFamily: 'FlappyFont',
 			fontSize: '50px'
 		})
-		this.controlsDialogue.depth = 2000
+		this.controlsDialogue.depth = this.depth
 		this.controlsDialogue.setOrigin(0.5, 0.5)
 		this.showControlsDialogue(150)
+	}
+	
+	setupDeathMenu() {
+		const BUTTON_OFFSET = 10
+		const BUTTON_GROUP_BOTTOM_PADDING = (this.menuSize.width - this.buttonSize.width) / 2
+		this.deathMenu = this.scene.add.image(this.scene.game.canvas.width / 2, this.scene.game.canvas.height / 2, 'death-menu')
+			.setOrigin(0.5, 0.5)
+			.setScale(0)
+			.setAlpha(0)
+			.setDepth(this.depth)
+		this.menuButton = this.scene.add.sprite(this.deathMenu.x, this.deathMenu.y + this.menuSize.height / 2 - this.buttonSize.height  - BUTTON_GROUP_BOTTOM_PADDING, 'menu-button')
+			.setOrigin(0.5, 0)
+			.setScale(0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+			.setDepth(this.depth)
+		this.restartButton = this.scene.add.sprite(this.menuButton.x, this.menuButton.y - this.buttonSize.height - BUTTON_OFFSET, 'restart-button')
+			.setOrigin(0.5, 0)
+			.setScale(0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+			.setDepth(this.depth)
+		this.menuScoreText = this.scene.add.text(this.deathMenu.x, this.deathMenu.y - this.menuSize.height / 4, '', {
+			fontFamily: 'FlappyFont',
+			fontSize: '50px',
+			strokeThickness: 5,
+			stroke: 'black'
+		})
+			.setOrigin(0.5, 1)
+			.setDepth(this.depth + 3)
+		this.menuScoreText.setPosition(this.menuScoreText.x, this.menuScoreText.y + this.menuScoreText.displayHeight / 2)
+			.setAlpha(0)
+			.setScale(0)
+		this.menuHighScoreText = this.scene.add.text(this.menuScoreText.x, this.menuScoreText.y + 100, '', {
+			fontFamily: 'FlappyFont',
+			fontSize: '50px',
+			strokeThickness: 5,
+			stroke: 'black'
+		})
+			.setOrigin(0.5, 1)
+			.setDepth(this.depth + 3)
+			.setAlpha(0)
+			.setScale(0)
 	}
 	
 	create() {
 		this.setupScore()
 		this.setupControlsDialogue()
+		this.setupDeathMenu()
 		this.particleManager = this.scene.add.particles('star-particle')
-		const source = (scoreText) => ({
-			getRandomPoint: function(vec) {
-				let x = 0
-				let y = 0
-				let alpha = 0
-				do {
-					x = Phaser.Math.RND.between(0, scoreText.displayWidth - 10)
-					y = Phaser.Math.RND.between(0, scoreText.displayHeight - 10)
-					alpha = scoreText.texture.getPixel(x, y).alpha
-				} while(alpha <= 0.9)
-				return vec.setTo(x + scoreText.x - scoreText.displayWidth / 2, y + scoreText.y - scoreText.displayHeight / 2)
-			}
-		})
-		this.starEmmiter = this.particleManager.createEmitter({
-			speed: 10,
-			lifespan: 500,
-			alpha: {start: 1, end: 0},
-			scale: {min: 0.1, max: 0.4},
-			on: false,
-			frequency: 100,
-			quantity: 3,
-			blendMode: 'ADD',
-			emitZone: {type: 'random', source: source(this.scoreText)}
-		})
+		this.starEmmiter = this.createStars(this.scoreText, {})
+		this.menuHighScoreText.setOrigin(0.5, 0.5)
+			.setScale(1)
+		this.menuStarEmmiter = this.createStars(this.menuHighScoreText, {frequency: 150, scale: {min: 0.05, max: 0.3}})
+		this.menuHighScoreText
+			.setScale(0)
 		this.particleManager.depth = 10001
 		this.tweens.scoreTextTween = this.fadeScaleAnim(this.scoreText, {x: this.scene.game.canvas.width / 2 - this.scoreText.displayWidth / 4, delay: 0})
 		this.tweens.highScoreTextTween = this.fadeScaleAnim(this.highScoreText, {x: this.scene.game.canvas.width / 2 - this.highScoreText.displayWidth / 4, delay: 100})
+	}
+	
+	createStars(text, {y=0, frequency=100, scale={min: 0.1, max: 0.5}}) {
+		return this.particleManager.createEmitter({
+			speed: 20,
+			lifespan: 500,
+			alpha: {start: 1, end: 0},
+			scale: scale,
+			on: false,
+			y: y,
+			frequency: frequency,
+			quantity: 3,
+			blendMode: 'ADD',
+			emitZone: {type: 'random', source: this.getSource(text)}
+		})
+	}
+	
+	getSource(text) {
+		return {getRandomPoint: function(vec) {
+			let x = 0
+			let y = 0
+			let alpha = 0
+			do {
+				x = Phaser.Math.RND.between(0, text.displayWidth - 10)
+				y = Phaser.Math.RND.between(0, text.displayHeight - 10)
+				alpha = text.texture.getPixel(x, y).alpha
+			} while(alpha <= 0.9)
+			return vec.setTo(x + text.x - text.displayWidth / 2, y + text.y - text.displayHeight / 2)
+		}}
 	}
 	
 	setScore(score) {
@@ -107,8 +192,8 @@ class UIManager extends FlappyState {
 	}
 	
 	updateScoreText() {
-		this.scoreText.text = this.score
-		this.scoreText.x = this.startPos.x
+		this.scoreText.setText(this.score + '')
+		// this.scoreText.x = this.startPos.x
 	}
 	
 	setHighScore(score) {
@@ -117,23 +202,9 @@ class UIManager extends FlappyState {
 	}
 	
 	updateHighScoreText() {
-		this.highScoreText.text = this.highScore
+		this.highScoreText.setText(this.highScore + "")
 		this.highScoreText.x = this.startPos.x
-		this.highScoreText.y = this.startPos.y + this.scoreText.displayHeight * .9
-	}
-	
-	resetG() {
-		super.reset()
-		
-		this.starEmmiter.stop()
-		this.starEmmiter.visible = false
-		
-		this.scoreText.style.color = '#fff'
-		if (this.score > this.highScore) {
-			this.setHighScore(this.score)
-		}
-		this.setScore(0)
-		this.showControlsDialogue()
+		this.highScoreText.y = this.startPos.y + this.scoreSize.height * .9
 	}
 	
 	startG() {
@@ -161,7 +232,65 @@ class UIManager extends FlappyState {
 	}
 	
 	stopG() {
-		super.stop()
+		if (this.currentState != States.PAUSED) {
+			super.stop()
+			if (this.score > this.highScore) {
+				if (!this.menuStarEmmiter.on) {
+					this.menuStarEmmiter.visible = true
+					this.menuStarEmmiter.start()
+				}
+				this.menuHighScoreText.setText(this.score)
+				this.setRainbowTint(this.menuHighScoreText)
+			} else {
+				this.resetColor(this.menuHighScoreText)
+				this.menuHighScoreText.setText(this.highScore)
+			}
+			this.starEmmiter.visible = false
+			this.menuScoreText.setText(this.score)
+			Utils.scaleOut(this.scene, {duration: 1000}, this.scoreText)
+			Utils.scaleOut(this.scene, {duration: 1000}, this.highScoreText)
+			Utils.scaleIn(this.scene, {delay: 200}, this.deathMenu, this.restartButton, this.menuButton, this.menuScoreText)
+			Utils.scaleIn(this.scene, {delay: 200, scale: this.score > this.highScore?1.5:1}, this.menuHighScoreText)
+			this.scene.input.once('gameobjectdown', (pointer, objectHit) => {
+				if (objectHit === this.restartButton) {
+					this.restartButton.setFrame(1)
+				} else if (objectHit === this.menuButton) {
+					this.menuButton.setFrame(1)
+				}
+			})
+			this.scene.input.once('gameobjectup', (pointer, objectHit) => {
+				if (objectHit === this.restartButton) {
+					this.restartButton.setFrame(0)
+					setTimeout(() => {
+						window.dispatchEvent(new Event('reset'))
+					}, 200)
+				} else if (objectHit === this.menuButton) {
+					this.menuButton.setFrame(0)
+					eventsCenter.emit('loadscene', {sceneToLoad: 'MenuScene', currentScene: this.scene.scene})
+				}
+				const fadeOut = Utils.scaleOut(this.scene, {duration: 1000}, this.deathMenu, this.restartButton, this.menuButton, this.menuScoreText, this.menuHighScoreText)
+			})
+		}
+	}
+	
+	resetG() {
+		super.reset()
+		
+		this.menuStarEmmiter.stop()
+		this.menuStarEmmiter.visible = false
+		
+		this.starEmmiter.stop()
+		this.starEmmiter.visible = false
+		this.resetColor(this.scoreText)
+		if (this.score > this.highScore) {
+			this.setHighScore(this.score)
+		}
+		this.setScore(0)
+		this.showControlsDialogue()
+		this.updateScoreText()
+		this.updateHighScoreText()
+		
+		Utils.scaleIn(this.scene, {}, this.highScoreText, this.scoreText)
 	}
 	
 	fadeScaleAnim(text, {delay = 0, duration = 1000, x = 0, easeParams = [4, 3], from={alpha:0, scale: 0.5}, to={alpha: 1, scale: 1, direction: '-'}}) {
@@ -205,26 +334,42 @@ class UIManager extends FlappyState {
 	addPoint() {
 		this.setScore(this.score + 1)
 		if (this.score > this.highScore) {
-			this.scoreText.style.setColor("#f5ff00")
+			this.setRainbowTint(this.scoreText)
 			if (!this.starEmmiter.on) {
 				this.starEmmiter.visible = true
 				this.starEmmiter.start()
 			}
 		} else if (this.score === this.highScore) {
-			this.scoreText.style.setColor("#2fff00")
+			this.scoreText.setTint(0xf0ffea, 0x2fff00, 0x27491a, 0x98ff72)
 		} else {
 			const ratio = this.score / this.highScore
 			if (ratio < 0.2) {
-				this.scoreText.setColor("#f0ffea")
+				this.scoreText.setTint(0x52b788, 0xb7e4c7, 0xb7e4c7, 0x1b4332)
 			} else if (ratio < 0.5) {
-				this.scoreText.setColor("rgb(221,255,204)")
+				this.scoreText.setTint(0x98ff72, 0x98ff72, 0x27491a, 0x27491a)
 			} else if (ratio < 0.8) {
-				this.scoreText.setColor("rgb(180,253,152)")
+				this.scoreText.setTint(0x38b000,0x004b23, 0x9ef01a,  0x007200)
 			} else if (ratio < 0.9) {
-				this.scoreText.setColor("#98ff72")
+				this.scoreText.setTint(0x38b000,0x007200, 0x007200,  0x007200)
 			}
 		}
 		this.bounceAnim(this.scoreText, {})
+	}
+	
+	setRainbowTint(text) {
+		if (this.difficulty === Difficulty.INSANE) {
+			text.setTint(0x2d00f7, 0xf72585, 0x480ca8, 0xff6d00)
+		} else if (this.difficulty === Difficulty.HARD) {
+			text.setTint(0xff758f, 0xe01e37, 0xff758f, 0xbd1f36)
+		} else if (this.difficulty === Difficulty.MEDIUM) {
+			text.setTint(0xfcec5d, 0xff5a00, 0xff9500, 0xffe15c)
+		} else {
+			text.setTint(0xff00ff, 0xffff00, 0x00ff00, 0xff0000)
+		}
+	}
+	
+	resetColor(text) {
+		text.setTint(0xFFFFFF)
 	}
 }
 

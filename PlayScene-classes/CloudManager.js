@@ -207,13 +207,11 @@ class CloudManager extends FlappyState {
 	 * of infinite clouds.
 	 */
 	update() {
-		if (this.currentState === States.IDLE || this.currentState === States.RUNNING) {
-			this.clouds.map(cloudGroup => {
-				if (cloudGroup.x <= -cloudGroup.displayWidth) {
-					cloudGroup.x = this.scene.game.canvas.width
-				}
-			})
-		}
+		this.clouds.map(cloudGroup => {
+			if (cloudGroup.x <= -cloudGroup.displayWidth) {
+				cloudGroup.x = this.scene.game.canvas.width
+			}
+		})
 	}
 	
 	/**

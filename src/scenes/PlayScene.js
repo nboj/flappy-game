@@ -9,6 +9,7 @@ import UIManager from "../../PlayScene-classes/UIManager";
 
 import eventsCenter from "../../PlayScene-classes/EventsCenter";
 import {Difficulty} from "../../enums/States";
+import pipeManager from "../../PlayScene-classes/PipeManager";
 
 const States = {
     IDLE: 0,
@@ -33,12 +34,14 @@ class PlayScene extends Phaser.Scene {
         this.start = false
         this.inputDown = false
         this.currentState = States.IDLE
-        this.deathDelayStart = null
         this.velocity = 200
+        this.colliders = []
+        this.overlaps = []
     }
     
     init(data) {
         this.difficulty = data.difficulty
+        console.log(data)
     }
     
     /**
@@ -47,41 +50,20 @@ class PlayScene extends Phaser.Scene {
      * it first loading the asset.
      */
     preload() {
-        const config = {
-            pipeCount: 8,
-            velocityX: -this.velocity,
-            difficulty: this.difficulty
-        }
-        if (this.difficulty === Difficulty.EASY) {
-            this.velocity = 170
-            config.finalHorizontalOffset = 200
-            config.verticalOffset = 220
-            this.pipeManager = new PipeManager(this, config)
-        } else if (this.difficulty === Difficulty.MEDIUM) {
-            this.velocity = 200
-            config.finalHorizontalOffset = 250
-            config.verticalOffset = 190
-            this.pipeManager = new PipeManager(this, config)
-        } else if (this.difficulty === Difficulty.HARD) {
-            this.velocity = 200
-            config.finalHorizontalOffset = 200
-            config.verticalOffset = 220
-            config.horizontalOffset = 350
-            this.pipeManager = new PipeManager(this, config)
-        } else {
-            this.velocity = 300
-            config.finalHorizontalOffset = 270
-            config.verticalOffset = 200
-            config.horizontalOffset = 300
-            this.pipeManager = new PipeManager(this, config)
-        }
+        this.start = false
+        this.inputDown = false
+        this.currentState = States.IDLE
+        this.velocity = 200
+        
+        
+        this.pipeManager = new PipeManager(this, {})
         // object instantiation
         this.bird = new Bird(this)
         this.floor = new Floor(this, {})
         this.cityscape = new Backdrop(this)
         this.cityscape.velocity = this.velocity
         this.cloudManager = new CloudManager(this)
-        this.uiManager = new UIManager(this)
+        this.uiManager = new UIManager(this, this.difficulty)
         
         // preload calls
         this.bird.preload()
@@ -123,10 +105,17 @@ class PlayScene extends Phaser.Scene {
         window.addEventListener('death', () => {
             this.handleDeath()
         })
+        // listens for reset event
+        window.addEventListener('reset', () => {
+            this.restart()
+        })
         
         // input event listeners
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         this.upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
+        this.input.keyboard.on('keydown-SPACE', () => {
+            this.handleInputDown()
+        })
         this.input.keyboard.on('keyup-SPACE', () => {
             this.onSpaceUp()
         })
@@ -134,14 +123,65 @@ class PlayScene extends Phaser.Scene {
             this.onSpaceUp()
         })
         
+        this.setupPipeManager({difficulty: this.difficulty})
+        
         // sets up collision checking
         this.handleCollisions()
     
         /** dev only */
-        this.bird.enableGodMode()
-
-        // Hide the loading overlay
-        eventsCenter.emit('loaded')
+        // this.bird.enableGodMode()
+        eventsCenter.on('resetscene', (e) => {
+            console.log('hi')
+            if (e) {
+                this.difficulty = e.difficulty
+                this.uiManager.difficulty = this.difficulty
+                this.setupPipeManager(e)
+                this.colliders.map(collider => {
+                    collider.destroy()
+                })
+                this.overlaps.map(overlap => {
+                    overlap.destroy()
+                })
+                this.colliders.length = 0
+                this.overlaps.length = 0
+                this.handleCollisions()
+                this.restart()
+            }
+        })
+    }
+    
+    setupPipeManager(e) {
+        this.pipeManager.difficulty = e.difficulty
+        const config = {
+            pipeCount: 8,
+            difficulty: e.difficulty
+        }
+        if (this.difficulty === Difficulty.EASY) {
+            this.velocity = 170
+            config.finalHorizontalOffset = 200
+            config.verticalOffset = 220
+            config.velocityX = -this.velocity
+        } else if (this.difficulty === Difficulty.MEDIUM) {
+            this.velocity = 200
+            config.finalHorizontalOffset = 250
+            config.verticalOffset = 200
+            config.velocityX = -this.velocity
+        } else if (this.difficulty === Difficulty.HARD) {
+            this.velocity = 200
+            config.finalHorizontalOffset = 220
+            config.verticalOffset = 180
+            config.horizontalOffset = 350
+            config.velocityX = -this.velocity
+        } else {
+            this.velocity = 300
+            config.finalHorizontalOffset = 270
+            config.verticalOffset = 170
+            config.horizontalOffset = 300
+            config.velocityX = -this.velocity
+        }
+        this.floor.velocity = this.velocity
+        console.log(this.velocity)
+        this.pipeManager.setConfig(config)
     }
     
     /**
@@ -198,15 +238,6 @@ class PlayScene extends Phaser.Scene {
         this.floor.update(time, delta)
         this.cloudManager.update()
         
-        if (this.currentState === States.DEAD) {
-            if (!this.deathDelayStart)
-                this.deathDelayStart = time
-            if (time - this.deathDelayStart >= 1000) {
-                this.deathDelayStart = null
-                this.restart()
-            }
-        }
-        
     }
     
     /**
@@ -250,12 +281,12 @@ class PlayScene extends Phaser.Scene {
      */
     handleCollisions() {
         this.pipeManager.pipes.map(pipe => {
-            this.physics.add.collider(this.bird.bird, pipe.pipeGroup, (e) => {
+            this.colliders.push(this.physics.add.collider(this.bird.bird, pipe.pipeGroup, (e) => {
                 window.dispatchEvent(new Event('death'))
-            }, null, this)
-            this.physics.add.overlap(this.bird.bird, pipe.checkpoint, () => {
+            }, null, this))
+            this.overlaps.push(this.physics.add.overlap(this.bird.bird, pipe.checkpoint, () => {
                 pipe.handleCheckpointOverlap()
-            })
+            }))
         })
     }
     

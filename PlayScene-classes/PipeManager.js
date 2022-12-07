@@ -70,6 +70,56 @@ class PipeManager extends FlappyState {
 		console.log(difficulty)
 	}
 	
+	setConfig({pipeCount=5, finalHorizontalOffset=0, horizontalOffset=finalHorizontalOffset+200, verticalOffset=100, startingX=null, velocityX=0, difficulty=1}) {
+		this.pipes.map(pipe => {
+			pipe.destroy()
+		})
+		this.pipes.length = 0
+		this.pipeCount = pipeCount
+		this.finalHorizontalOffset = finalHorizontalOffset
+		this.currentHorizontalOffset = horizontalOffset
+		this.startingHorizontalOffset = horizontalOffset
+		this.verticalOffset = verticalOffset
+		this.startingX = startingX
+		this.initialX = startingX
+		this.velocityX = velocityX
+		this.currentState = States.IDLE
+		this.difficulty = difficulty
+		
+		
+		// this will calculate the number of pipes to draw based on the screen width and the horizontal offset. It adds
+		// 2 because it needs one extra to fit the width but also another one as a sort of padding in case the next pipe
+		// doesn't recycle exactly on time.
+		this.pipeCount = Math.ceil(this.scene.game.canvas.width / (finalHorizontalOffset + 80)) + 2
+		this.anims.map(item => {
+			item.destroy()
+		})
+		this.anims = new Array(pipeCount)
+		if (this.difficulty === Difficulty.EASY) {
+			this.horizontalDecrementAmount = 5
+			this.movingPipeChanceArray = [1, 1, 2]
+		} else if (this.difficulty === Difficulty.MEDIUM) {
+			this.horizontalDecrementAmount = 10
+			this.movingPipeChanceArray = [1, 2]
+		} else if (this.difficulty === Difficulty.HARD) {
+			this.horizontalDecrementAmount = 15
+			this.movingPipeChanceArray = [1, 2, 2]
+		} else if (this.difficulty === Difficulty.INSANE) {
+			this.horizontalDecrementAmount = 20
+			this.movingPipeChanceArray = [2]
+		}
+		// if no starting value for x was given,
+		// it will start the pipes at the far right side of the canvas
+		if (!this.startingX) {
+			this.startingX = this.scene.game.canvas.width
+			this.initialX = this.startingX
+		}
+		this.preloadCreatePipes()
+		this.createPipes()
+		
+		
+	}
+	
 	/**
 	 * This function is called before anything is drawn on the canvas.
 	 * This allows for asset preloading which prevents anything from drawing without
@@ -99,7 +149,10 @@ class PipeManager extends FlappyState {
 			this.startingX = this.scene.game.canvas.width
 			this.initialX = this.startingX
 		}
-		
+		this.preloadCreatePipes()
+	}
+	
+	preloadCreatePipes() {
 		// creating PipeGroup objects and adding them to an array that will be used farther down in the code.
 		// it's also preloading each PipeGroup for anything that needs done before drawing to canvas.
 		for (let i = 0; i < this.pipeCount; i++) {
@@ -141,11 +194,7 @@ class PipeManager extends FlappyState {
 	 * and sets up each pipe's position
 	 */
 	create() {
-		for (let i = 0; i < this.pipes.length; i++) {
-			const pipe = this.pipes[i]
-			pipe.create()
-			this.setupPipePositions(pipe, i)
-		}
+		this.createPipes()
 		// this.pipes.map((pipe, index) => {
 		// 	// calling thee create method from the PipeGroup object
 		// 	pipe.create()
@@ -153,6 +202,14 @@ class PipeManager extends FlappyState {
 		// 	// setting the positions for the pipe
 		// 	this.setupPipePositions(pipe, index)
 		// })
+	}
+	
+	createPipes() {
+		for (let i = 0; i < this.pipes.length; i++) {
+			const pipe = this.pipes[i]
+			pipe.create()
+			this.setupPipePositions(pipe, i)
+		}
 	}
 	
 	/**
@@ -322,7 +379,6 @@ class PipeManager extends FlappyState {
 	stopG() {
 		if (this.currentState === States.RUNNING) {
 			super.stop()
-			this.currentState = States.IDLE
 			this.pipes.map(pipe => {
 				pipe.setVelocityX(0)
 			})

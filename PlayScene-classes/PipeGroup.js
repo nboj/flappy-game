@@ -91,10 +91,10 @@ class PipeGroup {
 		this.checkpoint.visible = false
 		
 		// setup group
-		this.pipeGroup.add(this.topPipe)
-		this.pipeGroup.add(this.bottomPipe)
-		this.pipeGroup.add(this.topCap)
-		this.pipeGroup.add(this.bottomCap)
+		this.pipeGroup.add(this.topPipe, true)
+		this.pipeGroup.add(this.bottomPipe, true)
+		this.pipeGroup.add(this.topCap, true)
+		this.pipeGroup.add(this.bottomCap, true)
 		
 		// updating and setup of initial position and velocity
 		this.updatePosition()
@@ -153,6 +153,8 @@ class PipeGroup {
 	 * This method handles resetting this current object back to its original values or, whatever values it has currently setup
 	 */
 	reset() {
+		// resets velocity
+		this.pipeGroup.setVelocityX(0)
 		// disables the moving pipe animations
 		this.stopTween()
 		// resetting the pipe colors
@@ -230,12 +232,22 @@ class PipeGroup {
 	}
 	
 	addTween(durations) {
+		let ease
+		let easeParams = [1, 3]
+		if (this.difficulty  === Difficulty.INSANE) {
+			ease = 'Sine.easeInOut'
+		} else if (this.difficulty === Difficulty.HARD) {
+			ease = 'Elastic.inOut'
+		} else {
+			ease = "Quadratic.easeInOut"
+		}
 		this.tween = this.scene.tweens.add({
 			targets: [this.topPipe, this.bottomPipe, this.topCap, this.bottomCap],
-			y: `+=${100 * Phaser.Math.RND.pick([-1, 1])}`,
+			y: `+=${Phaser.Math.RND.between(100, 150) * Phaser.Math.RND.pick([-1, 1])}`,
 			duration: Phaser.Math.RND.between(durations.min, durations.max),
-			ease: 'Sine.ease',
+			ease: ease,
 			repeat: -1,
+			easeParams: easeParams,
 			yoyo: true
 		})
 	}

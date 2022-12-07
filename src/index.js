@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import MenuScene from './scenes/MenuScene'
 import PlayScene from './scenes/PlayScene'
 import SceneLoader from "../helper-classes/SceneLoader";
+import Preload from "./scenes/Preload";
 
 /**
  * This is a configuration object for the actual game and it's properties.

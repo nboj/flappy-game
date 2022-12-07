@@ -21,7 +21,11 @@ class MenuScene extends Phaser.Scene {
 		super('MenuScene');
 		this.exit = false
 		this.difficulty = Difficulty.MEDIUM
-		this.difficultyButtonWidth = 160
+		this.difficultyButtonWidth = 160//152.5
+		this.playButtonSize = {
+			width: 145,
+			height: 95
+		}
 	}
 	
 	/**
@@ -51,8 +55,8 @@ class MenuScene extends Phaser.Scene {
 		this.load.spritesheet('play-button', '/assets/play-button.png', {
 			startFrame: 0,
 			endFrame: 1,
-			frameHeight: 160,
-			frameWidth: this.difficultyButtonWidth
+			frameHeight: this.playButtonSize.height,
+			frameWidth: this.playButtonSize.width
 		})
 		this.load.spritesheet('easy-button', '/assets/easy-button.png', {
 			startFrame: 0,
@@ -91,6 +95,7 @@ class MenuScene extends Phaser.Scene {
 	 * and is used to create all the animations and UI the user will view and interact with.
 	 */
 	create() {
+		
 		// setting up title text
 		this.titleText = this.add.text(this.game.canvas.width / 2, this.game.canvas.height / 2, 'Flappy Bird 3.0', {fontFamily: 'FlappyFont, sans-serif', fontSize: '5.5vw'})
 		this.titleText.setShadow(0, 10, '#5e5e5e', 0, false, true)
@@ -119,10 +124,37 @@ class MenuScene extends Phaser.Scene {
 		this.playButton.setInteractive({cursor: 'pointer'})
 		this.playButton.y += this.titleText.displayHeight / 2 + this.offset / 2
 		
+		
+		this.easyButton = this.add.sprite(this.playButton.x - this.difficultyButtonWidth - this.difficultyButtonWidth / 2, this.playButton.y, 'easy-button')
+			.setScale(0, 0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+		this.mediumButton = this.add.sprite(this.playButton.x - this.difficultyButtonWidth / 2, this.playButton.y, 'medium-button')
+			.setScale(0, 0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+		this.hardButton = this.add.sprite(this.playButton.x + this.difficultyButtonWidth / 2, this.playButton.y, 'hard-button')
+			.setScale(0, 0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+		this.insaneButton = this.add.sprite(this.playButton.x + this.difficultyButtonWidth + this.difficultyButtonWidth / 2, this.playButton.y, 'insane-button')
+			.setScale(0, 0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
+		
 		// setting values for the animations to animate from
 		this.titleText.alpha = 0
 		this.titleText.scale = 0
 		
+		eventsCenter.on('resetscene', (e) => {
+			if (!e) {
+				this.restartScene()
+			}
+		})
+		this.initiate()
+	}
+	
+	initiate() {
 		/**
 		 * This creates an animation for the title text game object. It
 		 * will animate from 0 opacity and 0 scale, to it's default values.
@@ -212,20 +244,9 @@ class MenuScene extends Phaser.Scene {
 				this.createDifficultyButtons()
 			})
 		})
-		eventsCenter.emit('loaded')
 	}
 	
 	createDifficultyButtons() {
-		this.easyButton = this.add.sprite(this.playButton.x - this.difficultyButtonWidth - this.difficultyButtonWidth / 2, this.playButton.y, 'easy-button')
-		this.mediumButton = this.add.sprite(this.playButton.x - this.difficultyButtonWidth / 2, this.playButton.y, 'medium-button')
-		this.hardButton = this.add.sprite(this.playButton.x + this.difficultyButtonWidth / 2, this.playButton.y, 'hard-button')
-		this.insaneButton = this.add.sprite(this.playButton.x + this.difficultyButtonWidth + this.difficultyButtonWidth / 2, this.playButton.y, 'insane-button')
-		
-		this.easyButton.setInteractive({cursor: 'pointer'})
-		this.mediumButton.setInteractive({cursor: 'pointer'})
-		this.hardButton.setInteractive({cursor: 'pointer'})
-		this.insaneButton.setInteractive({cursor: 'pointer'})
-		
 		this.easyButton.alpha = 0
 		this.easyButton.scale = 0
 		this.mediumButton.alpha = 0
@@ -328,7 +349,7 @@ class MenuScene extends Phaser.Scene {
 		setTimeout(() => {
 			this.bird.bird.stop()
 			this.bird.bird.setFrame(0)
-		}, 800)
+		}, 500)
 		// 100 milliseconds after the previous timeout, this will play a flap animation simulating the bird
 		// flying up into the sky
 		setTimeout(() => {
@@ -343,6 +364,7 @@ class MenuScene extends Phaser.Scene {
 			 */
 			setTimeout(() => {
 				this.exit = false
+				this.tweens.killAll()
 				eventsCenter.emit('loadscene', {sceneToLoad: 'PlayScene', currentScene: this.scene, data: {difficulty: this.difficulty}})
 			}, 1500)
 			/**
@@ -353,7 +375,7 @@ class MenuScene extends Phaser.Scene {
 			 */
 			this.tweens.add({
 				targets: [this.bird.bird],
-				y: -100,
+				y: -300,
 				duration: 3000,
 				delay: 1000,
 				ease: 'Elastic.out',
@@ -409,6 +431,14 @@ class MenuScene extends Phaser.Scene {
 				easeParams: [1, 1]
 			})
 		}
+	}
+	restartScene(e) {
+		this.bird.resetG()
+		this.bird.bird.x = this.game.canvas.width / 2
+		this.bird.bird.y = this.game.canvas.height / 2
+		this.bird.angle = 0
+		this.bird.bird.play('fly-infinite')
+		this.initiate()
 	}
 }
 

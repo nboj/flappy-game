@@ -20,25 +20,25 @@ class Bird extends FlappyState {
 	 * @constructor
 	 */
     constructor(scene) {
-		super(States.IDLE)
-        this.scene = scene
-        this.hasJumped = false
-        this.jumpVelocity = -800
-		this.time = 0
-		this.tiltDelayStart = 0
+		super(States.IDLE);
+        this.scene = scene;
+        this.hasJumped = false;
+        this.jumpVelocity = -800;
+		this.time = 0;
+		this.tiltDelayStart = 0;
 		this.startPosition = {
 			x: 416,
 			y: 400
-		}
-		this.idleAnimDelayStart = 0
-		this.idleAnimOffset = 1
-		this.topBoundry = 0
-		this.bottomBoundry = 0
+		};
+		this.idleAnimDelayStart = 0;
+		this.idleAnimOffset = 1;
+		this.topBoundry = 0;
+		this.bottomBoundry = 0;
 		
 		// whenever the death event is invoked, this will call the setDead() method
 		window.addEventListener('death', () => {
 			this.stopG()
-		})
+		});
     }
 	
 	/**
@@ -78,19 +78,21 @@ class Bird extends FlappyState {
 		// originally, the bird game-object had a circle collider. However, Phaser's implementation of this
 		// certain collider is somewhat poorly designed and will occasionally fall through some pipes.
 		// Either that, or I am implementing it improperly which is why it is now using a box collider.
-		// this.bird.body.setCircle(Math.round(this.bird.body.sourceWidth / 2.1), 50, -50)
 		
-		this.bird.body.setSize(this.bird.body.width - 100, this.bird.body.height - 200)
-		this.bird.body.setOffset(100, 100)
-		this.bird.body.bounce.x = 0.2;
-		this.bird.body.bounce.y = 0.2;
-		this.bird.body.gravity.y = 2800
-		this.bird.body.setDragX(300)
+		// this.bird.body.setSize(this.bird.body.width - 100, this.bird.body.height - 200)
+		// this.bird.body.setOffset(100, 100)
 		this.bird.body.collideWorldBounds = true;
 		this.scene.physics.world.bounds.bottom = this.bottomBoundry + this.bird.displayHeight / 2.5
-		this.bird.body.setMaxVelocityY(700)
-		this.bird.body.allowGravity = false
-		this.bird.body.allowRotation = true
+		this.bird.body
+			.setCircle(Math.round(this.bird.body.sourceWidth / 3), this.bird.body.sourceWidth/4, this.bird.body.sourceWidth/20)
+			.setMass(100)
+			.setBounce(0.5, 0.5)
+			.setAccelerationY(-10)
+			.setMaxVelocityY(700)
+			.setGravityY(2800)
+			.setAllowGravity(false)
+			.setAllowRotation(true)
+			.setDragX(300)
 	}
 	
 	/**
@@ -295,18 +297,22 @@ class Bird extends FlappyState {
 		if (super.getCurrentState() === States.ALIVE && this.bird.body) {
 			super.stop()
 			this.hitSprite.visible = true
+			this.bird.body.setVelocityX(200)
 			this.hitSprite.scale = 2
 			if (this.bird.body.onWall()) {
 				this.hitSprite.setAngle(-90)
+				this.bird.body.velocity.x = -200
 				this.hitSprite.x = this.bird.x + this.bird.displayWidth / 2
 				this.hitSprite.y = this.bird.y
 			} else if (this.bird.body.onCeiling()) {
+				this.bird.body.setVelocityY(-300)
 				this.hitSprite.setAngle(-180)
 				this.hitSprite.x = this.bird.x
 				this.hitSprite.y = this.bird.y - this.bird.displayHeight / 2
 			} else {
 				if (this.bird.y >= this.bottomBoundry - 10) {
 					this.hitSprite.scale = 2.5
+					this.bird.body.velocity.x = 200
 				}
 				this.hitSprite.setAngle(0)
 				this.hitSprite.x = this.bird.x

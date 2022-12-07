@@ -21,9 +21,6 @@ class SceneLoader extends Phaser.Scene {
 		this.load.image('loading-background', 'assets/loading-background.png')
 		
 		// event listeners
-		eventsCenter.on('loaded', () => {
-			this.onLoaded()
-		})
 		eventsCenter.on('loadscene', (e) => {
 			this.loadScene(e)
 		})
@@ -38,7 +35,7 @@ class SceneLoader extends Phaser.Scene {
 			},
 			// this is what gets called after the font has loaded
 			active: () => {
-				this.scene.run(this.startScene)
+				this.scene.launch(this.startScene)
 				// loading screen creation (might make a new class for reuse)
 				this.overlay = this.add.image(0, 0, 'loading-background')
 				this.overlay.setOrigin(0, 0)
@@ -68,15 +65,16 @@ class SceneLoader extends Phaser.Scene {
 			/**
 			 * this animation is the background of the loading screen
 			 */
-			this.animateOut(this.overlay, {easeParams: [5, 3], onCompleteX: -this.overlay.displayWidth})
+			this.animateOut(this.overlay, {duration: 2500, easeParams: [5, 3], onCompleteX: -this.overlay.displayWidth})
 			/**
 			 * this animation is the loading... text animation with the loading background animation
 			 */
-			this.animateOut(this.overlayText, {easeParams: [5, 3], onCompleteX: -this.game.canvas.width})
+			this.animateOut(this.overlayText, {duration: 2500, easeParams: [5, 3], onCompleteX: -this.game.canvas.width})
 		}
 	}
 	
 	loadScene(e) {
+		this.tweens.killAll()
 		if (!this.animateOnLoad) {
 			this.animateOnLoad = true
 		}
@@ -86,7 +84,14 @@ class SceneLoader extends Phaser.Scene {
 		
 		animation.on('complete', () => {
 			this.tweens.killAll()
-			e.currentScene.start(e.sceneToLoad, e.data)
+			e.currentScene.run(e.sceneToLoad, e.data)
+			e.currentScene.sleep()
+			this.scene.get(e.sceneToLoad).events.once('render', () => {
+			eventsCenter.emit('resetscene', e.data)
+				setTimeout(() => {
+					this.onLoaded()
+				}, 1000)
+			})
 		})
 	}
 	
