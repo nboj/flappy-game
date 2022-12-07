@@ -97,7 +97,7 @@ class MenuScene extends Phaser.Scene {
 	create() {
 		
 		// setting up title text
-		this.titleText = this.add.text(this.game.canvas.width / 2, this.game.canvas.height / 2, 'Flappy Bird 3.0', {fontFamily: 'FlappyFont, sans-serif', fontSize: '5.5vw'})
+		this.titleText = this.add.text(this.game.canvas.width / 2, this.game.canvas.height / 2, 'Flappers', {fontFamily: 'FlappyFont, sans-serif', fontSize: '5.5vw'})
 		this.titleText.setShadow(0, 10, '#5e5e5e', 0, false, true)
 		this.titleText.setOrigin(0.5, 0.5)
 		this.offset = 300
@@ -124,7 +124,10 @@ class MenuScene extends Phaser.Scene {
 		this.playButton.setInteractive({cursor: 'pointer'})
 		this.playButton.y += this.titleText.displayHeight / 2 + this.offset / 2
 		
-		
+		/**
+		 * Creating difficulty buttons and hiding them to be animatedIn in the future.
+		 * @type {Phaser.GameObjects.Sprite}
+		 */
 		this.easyButton = this.add.sprite(this.playButton.x - this.difficultyButtonWidth - this.difficultyButtonWidth / 2, this.playButton.y, 'easy-button')
 			.setScale(0, 0)
 			.setAlpha(0)
@@ -146,11 +149,17 @@ class MenuScene extends Phaser.Scene {
 		this.titleText.alpha = 0
 		this.titleText.scale = 0
 		
+		// whenever the "resetscene" event is called, this callback function will call the restartScene() method
+		// if no data was pasted to the callback function. This is because whenever playscene wants to transition to
+		// this scene, it will not pass anything to the loadscene function. However, whenever transitioning from this
+		// scene to the PlayScene, this scene will pass a difficulty value and this will still be called again. This ensures
+		// the scene wont be reset when it shouldn't need to.
 		eventsCenter.on('resetscene', (e) => {
 			if (!e) {
 				this.restartScene()
 			}
 		})
+		// sets up animations and everything for the menu scene.
 		this.initiate()
 	}
 	
@@ -246,7 +255,14 @@ class MenuScene extends Phaser.Scene {
 		})
 	}
 	
+	/**
+	 * Moved to a method in order to reuse this segment of code. This will setup all of the difficulty button values,
+	 * and will animate each one in with a certain delay. After those animations complete, it will animate the buttons
+	 * scaling up and down for an idle animation. This also sets up a callback function thats called whene the user
+	 * clicked on one of the buttons
+	 */
 	createDifficultyButtons() {
+		// setting default values for each button
 		this.easyButton.alpha = 0
 		this.easyButton.scale = 0
 		this.mediumButton.alpha = 0
@@ -256,11 +272,13 @@ class MenuScene extends Phaser.Scene {
 		this.insaneButton.alpha = 0
 		this.insaneButton.scale = 0
 		
+		// animating each button in with an incremented delay to create a chain animation
 		let easyTween = this.scaleIn({delay: 0}, this.easyButton)
 		let mediumTween = this.scaleIn({delay: 100}, this.mediumButton)
 		let hardTween = this.scaleIn({delay: 200}, this.hardButton)
 		let insaneTween = this.scaleIn({delay: 300}, this.insaneButton)
 		
+		// after each button completes it's animation, it will create a new oscillation animation independent to each button
 		easyTween.once('complete', () => {
 			easyTween = this.oscillate({}, this.easyButton)
 		})
@@ -273,12 +291,23 @@ class MenuScene extends Phaser.Scene {
 		insaneTween.once('complete', () => {
 			insaneTween = this.oscillate({}, this.insaneButton)
 		})
+		
+		/**
+		 * If user's mouse or input device is down on a gameobject that is interactable, the callback method is called
+		 * which sets the texture's frame to a button down texture
+		 */
 		this.input.once('gameobjectdown', (pointer, gameobject) => {
 			gameobject.setFrame(1)
 		})
+		/**
+		 * once the user releases the input on any of the interactable gameobjects, the callback function will be called
+		 * and will start the animations required to transition to the next scene
+		 */
 		this.input.once('gameobjectup', (pointer, gameobject) => {
 			gameobject.setFrame(0)
+			// stops all current Phaser.Tween animations
 			this.tweens.killAll()
+			// finding which button was selected and setting the difficulty accordingly
 			if (gameobject === this.easyButton) {
 				this.difficulty = Difficulty.EASY
 			} else if (gameobject === this.mediumButton) {
@@ -288,6 +317,7 @@ class MenuScene extends Phaser.Scene {
 			} else {
 				this.difficulty = Difficulty.INSANE
 			}
+			// animation out every button and starting the transition to next scene
 			this.scaleOut({}, this.insaneButton)
 			this.scaleOut({delay: 100}, this.hardButton)
 			this.scaleOut({delay: 200}, this.mediumButton)
@@ -297,6 +327,12 @@ class MenuScene extends Phaser.Scene {
 		})
 	}
 	
+	/**
+	 * DEV ONLY, SHOULD REFACTOR TO USE THE UTILS SCALE IN METHOD
+	 * @param delay
+	 * @param targets
+	 * @returns {Phaser.Tweens.Tween}
+	 */
 	scaleIn({delay=0}, ...targets) {
 		return this.tweens.add({
 			targets: targets,
@@ -307,6 +343,12 @@ class MenuScene extends Phaser.Scene {
 			easeParams: [1, 3]
 		})
 	}
+	/**
+	 * DEV ONLY, SHOULD REFACTOR TO USE THE UTILS SCALE OUT METHOD
+	 * @param delay
+	 * @param targets
+	 * @returns {Phaser.Tweens.Tween}
+	 */
 	scaleOut({delay=0}, ...targets) {
 		return this.tweens.add({
 			targets: targets,
@@ -317,6 +359,16 @@ class MenuScene extends Phaser.Scene {
 			easeParams: [1, 1]
 		})
 	}
+	
+	/**
+	 * DEV ONLY, SHOULD REFACTOR THIS INTO THE UTILS CLASS
+	 * @param delay
+	 * @param scale
+	 * @param easeParams
+	 * @param duration
+	 * @param targets
+	 * @returns {Phaser.Tweens.Tween}
+	 */
 	oscillate({delay=0, scale=1.05, easeParams=[3, 1], duration=500}, ...targets) {
 		return this.tweens.add({
 			targets: targets,
@@ -343,6 +395,10 @@ class MenuScene extends Phaser.Scene {
 		}
 	}
 	
+	/**
+	 * Starts all required animations to transition to the next scene. Must have all values set to animate
+	 * from before calling this method.
+	 */
 	start() {
 		// after 800 milliseconds, the callback function will execute. This will then stop the previous
 		// bird animation and sets the frame to a frame displaying the bird wings in the upright position
@@ -432,7 +488,11 @@ class MenuScene extends Phaser.Scene {
 			})
 		}
 	}
-	restartScene(e) {
+	
+	/**
+	 * This will reset the scene to how it started.
+	 */
+	restartScene() {
 		this.bird.resetG()
 		this.bird.bird.x = this.game.canvas.width / 2
 		this.bird.bird.y = this.game.canvas.height / 2

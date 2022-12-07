@@ -14,10 +14,10 @@ const States = {
  */
 class Floor extends FlappyState {
 	/**
-	 * Sets up the default values for the class variables
-	 * @param scene - this is the current Scene object
-	 * @param x - the starting x pos of the floor
-	 * @param y - the starting y pos of the floor
+	 * Sets up the default values for the class variables.
+	 * @param scene - this is the current Scene object.
+	 * @param x - the starting x pos of the floor. Used in case the floor needs to be repositioned, or positioned starting elsewhere from the left of the screen.
+	 * @param y - the starting y pos of the floor. Used in case the floor needs to be repositioned, or positioned starting elsewhere from the bottom of the screen.
 	 */
 	constructor(scene, {x=0, y=null}) {
 		super(States.IDLE)
@@ -49,6 +49,7 @@ class Floor extends FlappyState {
 	 * This method will create the ground and the floor to be displayed on the canvas
 	 */
 	create() {
+		// in case no y position was given, will position the object at the bottom of the canvas
 		if (!this.position.y)
 			this.position.y = this.scene.game.canvas.height
 		// ground creation
