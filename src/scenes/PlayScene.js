@@ -195,7 +195,7 @@ class PlayScene extends Phaser.Scene {
             config.horizontalOffset = 300
             config.velocityX = -this.velocity
         }
-        this.floor.velocity = this.velocity 
+        this.floor.velocity = this.velocity
         this.pipeManager.setConfig(config)
     }
     
