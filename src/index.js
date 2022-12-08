@@ -32,3 +32,4 @@ const config = {
  * @type {Phaser.Game}
  */
 const game = new Phaser.Game(config);
+

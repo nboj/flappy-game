@@ -25,13 +25,20 @@ class Backdrop extends FlappyState {
 			x: 0,
 			y: 0
 		}
+		
 		this.frameWidth = 640
-		this.frameHeight = 256
-		this.starCount = 25
+		this.frameHeight = 252
+		this.treeFrameHeight = 88
+		this.buildingFrameHeight = 184
+		
+		
+		this.starCount = 30
 		this.buildings = null
 		this.trees = null
 		this.background = null
 		this.velocity = 200
+		this.height = null
+		this.startingY = 0
 	}
 	
 	/**
@@ -40,16 +47,18 @@ class Backdrop extends FlappyState {
 	 * it first loading the asset.
 	 */
 	preload() {
+		if (!this.height)
+			this.height = this.scene.game.canvas.height
 		// asset injection
 		this.scene.load.image('moon', '/assets/moon.png')
 		this.scene.load.image('star', '/assets/star.png')
 		this.scene.load.spritesheet('buildings', '/assets/cityscape-buildings.png', {
 			frameWidth: this.frameWidth,
-			frameHeight: this.frameHeight
+			frameHeight: this.buildingFrameHeight
 		})
 		this.scene.load.spritesheet('trees', '/assets/cityscape-trees.png', {
 			frameWidth: this.frameWidth,
-			frameHeight: this.frameHeight
+			frameHeight: this.treeFrameHeight
 		})
 		this.scene.load.spritesheet('background', '/assets/cityscape-background.png', {
 			frameWidth: this.frameWidth,
@@ -62,13 +71,13 @@ class Backdrop extends FlappyState {
 	 */
 	updatePosition() {
 		this.buildings.x = this.position.x + this.scene.game.canvas.width / 2
-		this.buildings.y = this.position.y - this.buildings.displayHeight / 2
+		this.buildings.y = this.position.y
 		
 		this.trees.x = this.position.x + this.scene.game.canvas.width / 2
-		this.trees.y = this.position.y - this.trees.displayHeight / 2
+		this.trees.y = this.position.y
 
 		this.background.x = this.position.x + this.scene.game.canvas.width / 2
-		this.background.y = this.position.y - this.background.displayHeight / 2
+		this.background.y = this.position.y
 	}
 	
 	/**
@@ -91,13 +100,13 @@ class Backdrop extends FlappyState {
 		const verticalSections = this.starCount / 2
 		const sceneDimensions = {
 			width: this.scene.game.canvas.width,
-			height: this.scene.game.canvas.height - 200
+			height: this.height - 200
 		}
 		const sectionWidth = sceneDimensions.width / horizontalSections
 		const sectionHeight = sceneDimensions.height / verticalSections
-		const rt = this.scene.make.renderTexture(sceneDimensions)
-		rt.depth = -10001
-		rt.beginDraw()
+		this.rt = this.scene.make.renderTexture(sceneDimensions)
+		this.rt.depth = -10001
+		this.rt.beginDraw()
 		for (let i = 0; i < verticalSections; i++) {
 			for (let j = 0; j < horizontalSections; j++) {
 				const x = Phaser.Math.RND.between(sectionWidth * j, sectionWidth * j + sectionWidth)
@@ -106,13 +115,13 @@ class Backdrop extends FlappyState {
 				star.alpha = Phaser.Math.RND.realInRange(0.1, 0.9)
 				star.scale = Phaser.Math.RND.realInRange(0.1, 0.5)
 				star.setAngle(Phaser.Math.RND.integerInRange(0, 360))
-				rt.draw(star)
+				this.rt.draw(star)
 				star.visible = false
 				star.destroy()
 			}
 		}
-		rt.endDraw()
-		rt.saveTexture('stars')
+		this.rt.endDraw()
+		this.rt.saveTexture('stars')
 	}
 	
 	/**
@@ -120,15 +129,17 @@ class Backdrop extends FlappyState {
 	 * the illusion of infinite images
 	 */
 	createCityscape() {
-		this.buildings = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width, this.frameHeight, 'buildings')
-		this.buildings.depth = -101
+		this.buildings = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width + 100, this.buildingFrameHeight, 'buildings')
+			.setOrigin(0.5, 1)
+			.setDepth(-101)
 		
-		this.trees = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width, this.frameHeight, 'trees')
-		this.trees.depth = -100
+		this.trees = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width + 100, this.treeFrameHeight, 'trees')
+			.setOrigin(0.5, 1)
+			.setDepth(-100)
 		
-		this.background = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width, this.frameHeight, 'background')
-		this.background.depth = -102
-		
+		this.background = this.scene.add.tileSprite(0, 0, this.scene.game.canvas.width + 100, this.frameHeight, 'background')
+			.setOrigin(0.5, 1)
+			.setDepth(-102)
 	}
 	
 	/**
@@ -142,6 +153,7 @@ class Backdrop extends FlappyState {
 		this.moon.depth = -10000
 		
 		this.createStars()
+		this.rt.y = this.startingY
 		this.updatePosition()
 	}
 	

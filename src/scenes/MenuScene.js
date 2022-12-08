@@ -7,6 +7,7 @@ import Floor from "../../PlayScene-classes/Floor";
 import WebFont from 'webfontloader'
 import eventsCenter from "../../PlayScene-classes/EventsCenter";
 import {Difficulty} from '../../enums/States'
+import Utils from "../../helper-classes/Utils";
 
 /**
  * @classdesc Main menu scene for the game
@@ -21,7 +22,8 @@ class MenuScene extends Phaser.Scene {
 		super('MenuScene');
 		this.exit = false
 		this.difficulty = Difficulty.MEDIUM
-		this.difficultyButtonWidth = 160//152.5
+		this.difficultyButtonWidth = 160
+		this.startBirdSize = 120
 		this.playButtonSize = {
 			width: 145,
 			height: 95
@@ -58,6 +60,12 @@ class MenuScene extends Phaser.Scene {
 			frameHeight: this.playButtonSize.height,
 			frameWidth: this.playButtonSize.width
 		})
+		this.load.spritesheet('character-button', '/assets/character-selection-button.png', {
+			startFrame: 0,
+			endFrame: 1,
+			frameHeight: this.playButtonSize.height,
+			frameWidth: this.playButtonSize.width
+		})
 		this.load.spritesheet('easy-button', '/assets/easy-button.png', {
 			startFrame: 0,
 			endFrame: 1,
@@ -86,6 +94,9 @@ class MenuScene extends Phaser.Scene {
 		// object preloading calls
 		this.bird.preload()
 		this.floor.preload()
+		this.background.height = this.game.canvas.height * 3
+		this.background.startingY = -this.game.canvas.height * 2
+		this.background.starCount = 50
 		this.background.preload()
 	}
 	
@@ -95,7 +106,6 @@ class MenuScene extends Phaser.Scene {
 	 * and is used to create all the animations and UI the user will view and interact with.
 	 */
 	create() {
-		
 		// setting up title text
 		this.titleText = this.add.text(this.game.canvas.width / 2, this.game.canvas.height / 2, 'Flappers', {fontFamily: 'FlappyFont, sans-serif', fontSize: '5.5vw'})
 		this.titleText.setShadow(0, 10, '#5e5e5e', 0, false, true)
@@ -108,21 +118,33 @@ class MenuScene extends Phaser.Scene {
 		this.floor.create()
 		this.background.create()
 		this.background.setPosition(0, this.game.canvas.height - this.floor.getHeight())
+		this.floor.ground.displayHeight = this.game.canvas.height
+		this.floor.ground.y = this.floor.floor.y + this.floor.ground.displayHeight
 		
 		// disabling the bird since the user will not be controlling it in the main menu
-		this.bird.bird.body.setEnable(false)
+		// this.bird.bird.body.setEnable(false)
+		this.bird.bird.body
+			.setCollideWorldBounds(false)
+			.setMaxVelocityY(2800)
 		// positioning the bird
 		this.bird.bird.setOrigin(0.5, 0.5)
 		this.bird.bird.x = this.game.canvas.width / 2
 		this.bird.bird.y = this.game.canvas.height / 2
-		this.bird.bird.displayWidth = 120
-		this.bird.bird.displayHeight = 120
+		this.bird.bird.displayWidth = this.startBirdSize
+		this.bird.bird.displayHeight = this.startBirdSize
 		
-		// play button settup and creation
+		const BUTTON_OFFSET = 20
+		// play button setup and creation
 		this.playButton = this.add.image(this.game.canvas.width / 2, this.game.canvas.height / 2, 'play-button')
 		this.playButton.setOrigin(0.5, 0.5)
 		this.playButton.setInteractive({cursor: 'pointer'})
 		this.playButton.y += this.titleText.displayHeight / 2 + this.offset / 2
+		
+		this.backButton = this.add.image(this.bird.bird.x, -((this.game.canvas.height * 1.5) - this.game.canvas.height / 4), 'play-button')
+			.setDepth(10000)
+			.setScale(0)
+			.setAlpha(0)
+			.setInteractive({cursor: 'pointer'})
 		
 		/**
 		 * Creating difficulty buttons and hiding them to be animatedIn in the future.
@@ -144,6 +166,15 @@ class MenuScene extends Phaser.Scene {
 			.setScale(0, 0)
 			.setAlpha(0)
 			.setInteractive({cursor: 'pointer'})
+		
+		this.playButton.x += - this.playButtonSize.width / 2 - BUTTON_OFFSET / 2
+		
+		
+		// Character creator button setup and creation
+		this.characterCustomizationButon = this.add.image(this.game.canvas.width / 2 + this.playButtonSize.width / 2 + BUTTON_OFFSET / 2, this.game.canvas.height / 2, 'character-button')
+			.setOrigin(0.5, 0.5)
+			.setInteractive({cursor: 'pointer'})
+		this.characterCustomizationButon.y += this.titleText.displayHeight / 2 + this.offset / 2
 		
 		// setting values for the animations to animate from
 		this.titleText.alpha = 0
@@ -182,21 +213,26 @@ class MenuScene extends Phaser.Scene {
 		 * This following code will add a looping animation to the title text object
 		 * after the first initial animation is completed
 		 */
-		titleTween.on('complete', () => {
+		titleTween.on('complete',() => {
+			if (this.titleTween) {
+				this.titleTween.stop()
+			}
 			this.titleTween = this.tweens.add({
 				targets: [this.titleText],
 				scale: 1.1,
 				duration: 1000,
-				ease: 'Elastic.out',
-				easeParams: [10, 10],
+				ease: 'Back.out',
+				easeParams: [4, 3],
 				loop: -1,
 				yoyo: true
 			})
 		})
 		
-		// setting up values for the play button to animate from
+		// setting up values for the buttons to animate from
 		this.playButton.alpha = 0
 		this.playButton.scale = 0
+		this.characterCustomizationButon.alpha = 0
+		this.characterCustomizationButon.scale = 0
 		
 		/**
 		 * This Phaser Tween animates the play button from 0 opacity and scale to
@@ -209,6 +245,15 @@ class MenuScene extends Phaser.Scene {
 			alpha: 1,
 			duration: 1000,
 			delay: 1000,
+			ease: 'Elastic.out',
+			easeParams: [1, 1]
+		})
+		const characterCustomizationButtonTween = this.tweens.add({
+			targets: [this.characterCustomizationButon],
+			scale: 1,
+			alpha: 1,
+			duration: 1000,
+			delay: 1200,
 			ease: 'Elastic.out',
 			easeParams: [1, 1]
 		})
@@ -226,32 +271,128 @@ class MenuScene extends Phaser.Scene {
 				yoyo: true
 			})
 		})
+		characterCustomizationButtonTween.on('complete', () => {
+			this.tweens.add({
+				targets: [this.characterCustomizationButon],
+				scale: 1.1,
+				duration: 1000,
+				ease: 'Sine.easeInOut',
+				loop: -1,
+				yoyo: true
+			})
+		})
 		/**
 		 * This.input.on('gameobjectdown') will execute the following callback function
 		 * whenever the play button is clicked by the user.
 		 */
-		this.input.once('gameobjectdown', () => {
+		this.input.once('gameobjectdown', (pointer, gameobject) => {
 			// sets the current frame of the play button to 1, which is an image of the button clicked down
-			this.playButton.setFrame(1)
+			gameobject.setFrame(1)
 		})
 		/**
 		 * this waits for the user to lift off of the button and will reset the button frame back to its original
 		 * frame
 		 */
-		this.input.once('gameobjectup', () => {
-			this.playButton.setFrame(0)
+		this.input.once('gameobjectup', (pointer, gameobject) => {
+			gameobject.setFrame(0)
 			playButtonTween.stop()
-			const tween = this.tweens.add({
-				targets: [this.playButton],
-				scale: 0,
-				alpha: 0,
-				ease: 'Elastic.out',
-				duration: 300,
-				easeParams: [1, 3]
+			characterCustomizationButtonTween.stop()
+			if (gameobject === this.playButton) {
+				const tween = this.animateMenuOut()
+				tween.on('complete', () => {
+					this.createDifficultyButtons()
+				})
+			} else if (gameobject === this.characterCustomizationButon) {
+				this.onCharacterCustomizationButtonHit()
+			}
+		})
+	}
+	
+	animateMenuOut() {
+		return this.tweens.add({
+			targets: [this.playButton, this.characterCustomizationButon],
+			scale: 0,
+			alpha: 0,
+			ease: 'Elastic.out',
+			duration: 300,
+			easeParams: [1, 3]
+		})
+	}
+	
+	onCharacterCustomizationButtonHit() {
+		const tween = this.animateMenuOut()
+		tween.on('complete', () => {
+			this.bird.bird.depth = 10000
+			this.floor.stopG()
+			this.background.stopG()
+			this.bird.stopIdleTween()
+			const y = -this.game.canvas.height * 1.5
+			setTimeout(() => {
+				this.cameras.main.pan(this.cameras.main.centerX, y, 2000, 'Sine.easeInOut', false, () => {
+				
+				})
+			}, 2000)
+			this.cameras.main.zoomTo(1.2, 2000, "Sine.easeInOut")
+			// const birdZoomTween = Utils.scale(this, {duration: 700, scaleX: this.bird.bird.scaleX -0.05, scaleY: this.bird.bird.scaleY -0.05}, this.bird.bird)
+			
+			// const birdTranslateTween = Utils.translateY(this, {duration: 800, y: "-= 100", ease: 'Sine.easeInOut', easeParams: [5, 3]}, this.bird.bird)
+			this.bird.stopIdleTween()
+			this.bird.bird.anims.stop()
+			this.animateBirdOut()
+			setTimeout(() => {
+				this.tweens.killAll()
+				Utils.scaleIn(this, {scale: 0.8, delay: 2000}, () => {
+					this.backButtonTween = this.oscillate({scale: 0.9}, this.backButton)
+				}, this.backButton)
+				this.bird.bird.body
+					.setAllowGravity(false)
+					.setEnable(false)
+				this.bird.bird.y = y
+				this.bird.bird.x = this.game.canvas.width / 2
+				this.bird.bird.angle = 0
+				this.bird.bird.setFrame(1)
+			}, 2200)
+			
+			this.input.once('gameobjectdown', (pointer, gameobject) => {
+				this.backButton.setFrame(1)
 			})
-			tween.on('complete', () => {
-				this.createDifficultyButtons()
+			this.input.once('gameobjectup', (pointer, gameobject) => {
+				this.tweens.killAll()
+				this.backButton.setFrame(0)
+				this.cameras.main.zoomTo(1, 2000, "Sine.easeInOut")
+				this.floor.startG()
+				this.background.startG()
+				Utils.scaleOut(this, {from: {scale: 0.8, alpha: 1}}, this.backButton)
+				setTimeout(() => {
+					this.cameras.main.pan(this.cameras.main.centerX, this.game.canvas.height / 2, 1500, 'Sine.easeInOut', false, () => {
+						this.titleText
+							.setScale(0)
+							.setAlpha(0)
+						this.playButton
+							.setScale(0)
+							.setAlpha(0)
+						this.characterCustomizationButon
+							.setScale(0)
+							.setAlpha(0)
+						this.initiate()
+					})
+					setTimeout(() => {
+						this.bird.bird.play('fly-infinite')
+						this.animateBirdIn()
+					}, 1300)
+				}, 1000)
 			})
+		})
+	}
+	animateBirdIn() {
+		this.bird.bird.y = -this.bird.bird.displayHeight / 2
+		this.bird.bird.x = this.game.canvas.width / 2 - 200
+		this.bird.bird.displayHeight = this.startBirdSize
+		this.bird.bird.displayWidth = this.startBirdSize
+		const tween = Utils.translateY(this, {y: this.game.canvas.height / 2, ease: 'Back.out', easeParams: [1, 1]}, this.bird.bird)
+		const tween2 = Utils.translateX(this, {x: this.game.canvas.width / 2, ease: 'Sine.easeInOut', easeParams: [3, 1]}, this.bird.bird)
+		tween.on('complete', () => {
+			this.bird.setupIdle()
 		})
 	}
 	
@@ -402,10 +543,7 @@ class MenuScene extends Phaser.Scene {
 	start() {
 		// after 800 milliseconds, the callback function will execute. This will then stop the previous
 		// bird animation and sets the frame to a frame displaying the bird wings in the upright position
-		setTimeout(() => {
-			this.bird.bird.stop()
-			this.bird.bird.setFrame(0)
-		}, 500)
+		this.bird.bird.stop()
 		// 100 milliseconds after the previous timeout, this will play a flap animation simulating the bird
 		// flying up into the sky
 		setTimeout(() => {
@@ -423,58 +561,7 @@ class MenuScene extends Phaser.Scene {
 				this.tweens.killAll()
 				eventsCenter.emit('loadscene', {sceneToLoad: 'PlayScene', currentScene: this.scene, data: {difficulty: this.difficulty}})
 			}, 1500)
-			/**
-			 * This animation is the longest animation out of all the other ones and is used as a
-			 * way to know when to animate the loading screen. This animation animates the y position
-			 * of the bird past the top of the screen after waiting 1 second
-			 * @type {Phaser.Tweens.Tween}
-			 */
-			this.tweens.add({
-				targets: [this.bird.bird],
-				y: -300,
-				duration: 3000,
-				delay: 1000,
-				ease: 'Elastic.out',
-				easeParams: [1, 1]
-			})
-			
-			/**
-			 * This animation animates the bird flying upwards one more time before shooting up past the top of the screen
-			 * Starts animation after 1 second
-			 */
-			this.tweens.add({
-				targets: [this.bird.bird],
-				y: "-= 50",
-				duration: 1000,
-				delay: 0,
-				ease: 'Sine.easeOut',
-				easeParams: [3, 1]
-			})
-			
-			/**
-			 * This animation will animate the bird flying to the right of the screen. Paired with the previous
-			 * animations, this will allow a simulation of the bird flying upwards at a curve.
-			 */
-			this.tweens.add({
-				targets: [this.bird.bird],
-				x: this.game.canvas.width / 2 + 200,
-				duration: 1000,
-				delay: 1000,
-				ease: 'Elastic.out',
-				easeParams: [1, 1]
-			})
-			
-			/**
-			 * This animation will rotate the bird while it is flying upwards
-			 */
-			this.tweens.add({
-				targets: [this.bird.bird],
-				angle: -100,
-				duration: 1000,
-				delay: 1000,
-				ease: 'Sine.out',
-				easeParams: [1, 1]
-			})
+			this.animateBirdOut()
 			/**
 			 * this animation will animate out the title text by changing it's opacity and scale to 0
 			 */
@@ -487,6 +574,68 @@ class MenuScene extends Phaser.Scene {
 				easeParams: [1, 1]
 			})
 		}
+	}
+	
+	animateBirdOut() {
+		this.bird.bird.setFrame(3)
+		setTimeout(() => {
+			this.bird.bird.setFrame(0)
+		}, 500)
+		setTimeout(() => {
+			this.bird.bird.setFrame(3)
+		}, 1000)
+		/**
+		 * This animation is the longest animation out of all the other ones and is used as a
+		 * way to know when to animate the loading screen. This animation animates the y position
+		 * of the bird past the top of the screen after waiting 1 second
+		 * @type {Phaser.Tweens.Tween}
+		 */
+		this.tweens.add({
+			targets: [this.bird.bird],
+			y: -300,
+			duration: 3000,
+			delay: 1000,
+			ease: 'Elastic.out',
+			easeParams: [1, 1]
+		})
+		
+		/**
+		 * This animation animates the bird flying upwards one more time before shooting up past the top of the screen
+		 * Starts animation after 1 second
+		 */
+		this.tweens.add({
+			targets: [this.bird.bird],
+			y: "-= 50",
+			duration: 1000,
+			delay: 0,
+			ease: 'Sine.easeOut',
+			easeParams: [3, 1]
+		})
+		
+		/**
+		 * This animation will animate the bird flying to the right of the screen. Paired with the previous
+		 * animations, this will allow a simulation of the bird flying upwards at a curve.
+		 */
+		this.tweens.add({
+			targets: [this.bird.bird],
+			x: this.game.canvas.width / 2 + 200,
+			duration: 1000,
+			delay: 1000,
+			ease: 'Elastic.out',
+			easeParams: [1, 1]
+		})
+		
+		/**
+		 * This animation will rotate the bird while it is flying upwards
+		 */
+		this.tweens.add({
+			targets: [this.bird.bird],
+			angle: -100,
+			duration: 1000,
+			delay: 1000,
+			ease: 'Sine.out',
+			easeParams: [1, 1]
+		})
 	}
 	
 	/**

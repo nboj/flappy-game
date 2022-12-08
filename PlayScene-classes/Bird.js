@@ -34,6 +34,7 @@ class Bird extends FlappyState {
 		this.idleAnimOffset = 1;
 		this.topBoundry = 0;
 		this.bottomBoundry = 0;
+		this.startSize = 64
 		
 		// whenever the death event is invoked, this will call the setDead() method
 		window.addEventListener('death', () => {
@@ -68,8 +69,8 @@ class Bird extends FlappyState {
 	setupBird() {
 		this.bird = this.scene.physics.add.sprite(this.startPosition.x, this.startPosition.y, 'bird')
 		this.bird.depth = 1000
-		this.bird.displayWidth = 64
-		this.bird.displayHeight = 64
+		this.bird.displayWidth = this.startSize
+		this.bird.displayHeight = this.startSize
 		this.bird.setOrigin(0.5, 0.5)
 		
 		/**

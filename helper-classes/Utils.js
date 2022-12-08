@@ -20,7 +20,7 @@ class Utils {
 	 * @param targets {any} - the Phaser gameobjects that will be animated
 	 * @returns {Phaser.Tweens.Tween} - the Phaser.Tween object which can be used to create callbacks on animation complete, the destruction of the animation, or for anything that might require access to the animation tween.
 	 */
-	static scaleIn(scene, {delay=0, scale=1, alpha=1, easeParams=[4, 3], duration=1000, from={scale: 0.5, alpha: 0}}, ...targets) {
+	static scaleIn(scene, {delay=0, scale=1, alpha=1, easeParams=[4, 3], duration=1000, from={scale: 0.5, alpha: 0}}, callback, ...targets) {
 		// mapping through all of the targets and setting given values to animate from
 		targets.map(item => {
 			item.alpha = from.alpha
@@ -33,7 +33,8 @@ class Utils {
 			alpha: alpha,
 			delay: delay,
 			ease: 'Elastic.out',
-			easeParams: easeParams
+			easeParams: easeParams,
+				onComplete: callback
 		})
 	}
 	
@@ -64,6 +65,52 @@ class Utils {
 			alpha: alpha,
 			delay: delay,
 			ease: 'Elastic.out',
+			easeParams: easeParams
+		})
+	}
+	
+	static scale(scene, {delay=0, scaleX=0, scaleY=scaleX, easeParams=[4, 3], duration=1000, ease='Sine.easeOut'}, ...targets) {
+		return scene.tweens.add({
+			targets: targets,
+			delay: delay,
+			scaleX: scaleX,
+			scaleY: scaleY,
+			duration: duration,
+			ease: ease,
+			easeParams: easeParams
+		})
+	}
+	
+	static translateX(scene, {delay=0, x=0, easeParams=[4, 3], duration=1000, ease='Sine.easeOut'}, ...targets) {
+		return scene.tweens.add({
+			targets: targets,
+			delay: delay,
+			x: x,
+			duration: duration,
+			ease: ease,
+			easeParams: easeParams
+		})
+	}
+	
+	static translateY(scene, {delay=0, y=0, easeParams=[4, 3], duration=1000, ease='Sine.easeOut'}, ...targets) {
+		return scene.tweens.add({
+			targets: targets,
+			delay: delay,
+			y: y,
+			duration: duration,
+			ease: ease,
+			easeParams: easeParams
+		})
+	}
+	
+	static translate(scene, {delay=0, x=0, y=x, easeParams=[4, 3], duration=1000, ease='Sine.easeOut'}, ...targets) {
+		return scene.tweens.add({
+			targets: targets,
+			delay: delay,
+			x: x,
+			y: y,
+			duration: duration,
+			ease: ease,
 			easeParams: easeParams
 		})
 	}

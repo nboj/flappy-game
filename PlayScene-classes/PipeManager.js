@@ -32,48 +32,50 @@ class PipeManager extends FlappyState {
 		super(States.IDLE)
 		this.scene = scene
 		this.pipes = []
-		this.pipeCount = pipeCount
-		this.finalHorizontalOffset = finalHorizontalOffset
-		this.currentHorizontalOffset = horizontalOffset
-		this.startingHorizontalOffset = horizontalOffset
-		this.verticalOffset = verticalOffset
-		this.startingX = startingX
-		this.initialX = startingX
-		this.velocityX = velocityX
-		this.currentState = States.IDLE
-		this.difficulty = difficulty
-		// this.changeOffsetDelayStart = 0
-		// this.changeOffsetDelay = changeOffsetDelay
-		
-		this.checkRecycleDelayStart = 0
-		this.checkRecycleDelay = 100
-
-		// this will calculate the number of pipes to draw based on the screen width and the horizontal offset. It adds
-		// 2 because it needs one extra to fit the width but also another one as a sort of padding in case the next pipe
-		// doesn't recycle exactly on time.
-		this.pipeCount = Math.ceil(this.scene.game.canvas.width / (finalHorizontalOffset + 80)) + 2
-		console.log(this.pipeCount)
-		this.anims = new Array(pipeCount)
-		if (this.difficulty === Difficulty.EASY) {
-			this.horizontalDecrementAmount = 5
-			this.movingPipeChanceArray = [1, 1, 2]
-		} else if (this.difficulty === Difficulty.MEDIUM) {
-			this.horizontalDecrementAmount = 10
-			this.movingPipeChanceArray = [1, 2]
-		} else if (this.difficulty === Difficulty.HARD) {
-			this.horizontalDecrementAmount = 15
-			this.movingPipeChanceArray = [1, 2, 2]
-		} else if (this.difficulty === Difficulty.INSANE) {
-			this.horizontalDecrementAmount = 20
-			this.movingPipeChanceArray = [2]
-		}
-		console.log(difficulty)
+		// this.pipeCount = pipeCount
+		// this.finalHorizontalOffset = finalHorizontalOffset
+		// this.currentHorizontalOffset = horizontalOffset
+		// this.startingHorizontalOffset = horizontalOffset
+		// this.verticalOffset = verticalOffset
+		// this.startingX = startingX
+		// this.initialX = startingX
+		// this.velocityX = velocityX
+		// this.currentState = States.IDLE
+		// this.difficulty = difficulty
+		// // this.changeOffsetDelayStart = 0
+		// // this.changeOffsetDelay = changeOffsetDelay
+		//
+		// this.checkRecycleDelayStart = 0
+		// this.checkRecycleDelay = 100
+		//
+		// // this will calculate the number of pipes to draw based on the screen width and the horizontal offset. It adds
+		// // 2 because it needs one extra to fit the width but also another one as a sort of padding in case the next pipe
+		// // doesn't recycle exactly on time.
+		// this.pipeCount = Math.ceil(this.scene.game.canvas.width / (finalHorizontalOffset + 80)) + 2
+		// console.log(this.pipeCount)
+		// this.anims = new Array(pipeCount)
+		// if (this.difficulty === Difficulty.EASY) {
+		// 	this.horizontalDecrementAmount = 5
+		// 	this.movingPipeChanceArray = [1, 1, 2]
+		// } else if (this.difficulty === Difficulty.MEDIUM) {
+		// 	this.horizontalDecrementAmount = 10
+		// 	this.movingPipeChanceArray = [1, 2]
+		// } else if (this.difficulty === Difficulty.HARD) {
+		// 	this.horizontalDecrementAmount = 15
+		// 	this.movingPipeChanceArray = [1, 2, 2]
+		// } else if (this.difficulty === Difficulty.INSANE) {
+		// 	this.horizontalDecrementAmount = 20
+		// 	this.movingPipeChanceArray = [2]
+		// }
+		// console.log(difficulty)
 	}
 	
 	setConfig({pipeCount=5, finalHorizontalOffset=0, horizontalOffset=finalHorizontalOffset+200, verticalOffset=100, startingX=null, velocityX=0, difficulty=1}) {
-		this.pipes.map(pipe => {
-			pipe.destroy()
-		})
+		if (this.pipes) {
+			this.pipes.map(pipe => {
+				pipe.destroy()
+			})
+		}
 		this.pipes.length = 0
 		this.pipeCount = pipeCount
 		this.finalHorizontalOffset = finalHorizontalOffset
@@ -86,14 +88,18 @@ class PipeManager extends FlappyState {
 		this.currentState = States.IDLE
 		this.difficulty = difficulty
 		
+		this.checkRecycleDelayStart = 0
+		this.checkRecycleDelay = 100
 		
 		// this will calculate the number of pipes to draw based on the screen width and the horizontal offset. It adds
 		// 2 because it needs one extra to fit the width but also another one as a sort of padding in case the next pipe
 		// doesn't recycle exactly on time.
 		this.pipeCount = Math.ceil(this.scene.game.canvas.width / (finalHorizontalOffset + 80)) + 2
-		this.anims.map(item => {
-			item.destroy()
-		})
+		if (this.anims) {
+			this.anims.map(item => {
+				item.destroy()
+			})
+		}
 		this.anims = new Array(pipeCount)
 		if (this.difficulty === Difficulty.EASY) {
 			this.horizontalDecrementAmount = 5

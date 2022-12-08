@@ -217,15 +217,19 @@ class PipeGroup {
 		} else if (this.difficulty === Difficulty.EASY) {
 			if (this.pipeColor === 'light-green') {
 				const durations = this.setupTween(['orange'])
+				this.stopTween()
 				this.addTween(durations)
 			}
-			
 		} else {
+			this.stopTween()
 			if (this.pipeColor === 'light-green') {
 				const durations = this.setupTween(['orange', 'orange', 'orange', 'red'])
 				this.addTween(durations)
-			} else if (this.pipeColor === 'orange') {
+			} else if (this.pipeColor === 'orange' || this.pipeColor === 'red') {
 				const durations = this.setupTween(['red'])
+				this.addTween(durations)
+			} else {
+				const durations = this.setupTween(['purple'])
 				this.addTween(durations)
 			}
 		}

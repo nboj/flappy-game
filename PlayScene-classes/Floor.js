@@ -54,13 +54,12 @@ class Floor extends FlappyState {
 			this.position.y = this.scene.game.canvas.height
 		// ground creation
 		const canvasWidth = this.scene.game.canvas.width
-		this.ground = this.scene.add.tileSprite(0, 0, canvasWidth, 100, 'ground')
+		this.ground = this.scene.add.tileSprite(50, 0, canvasWidth + 100, 100 + 100, 'ground')
 		this.ground.x = canvasWidth / 2
 		this.ground.setOrigin(0, 1)
 		this.ground.depth = 2000
-		
 		// floor creation
-		this.floor = this.scene.add.tileSprite(0, 0, canvasWidth, 32, 'floor')
+		this.floor = this.scene.add.tileSprite(50, 0, canvasWidth + 100, 32, 'floor')
 		this.floor.x = canvasWidth / 2
 		this.floor.setOrigin(0, 1)
 		this.floor.depth = 2001
@@ -73,10 +72,10 @@ class Floor extends FlappyState {
 	 * This method will update the ground and floor using given class position variable
 	 */
 	updatePosition() {
-		this.ground.x =  this.position.x
-		this.ground.y =  this.position.y
-		this.floor.x = this.position.x
-		this.floor.y =  this.position.y - this.ground.displayHeight
+		this.ground.x =  this.position.x - 50
+		this.ground.y =  this.position.y + 100
+		this.floor.x = this.position.x - 50
+		this.floor.y =  this.position.y - this.ground.displayHeight + 100
 	}
 	
 	/**
@@ -84,7 +83,7 @@ class Floor extends FlappyState {
 	 * @returns {number} - the total height between the floor and the ground
 	 */
 	getHeight() {
-		return this.ground.displayHeight + this.floor.displayHeight
+		return this.ground.displayHeight + this.floor.displayHeight - 100
 	}
 	
 	/**

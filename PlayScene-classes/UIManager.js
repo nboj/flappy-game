@@ -235,22 +235,23 @@ class UIManager extends FlappyState {
 		if (this.currentState != States.PAUSED) {
 			super.stop()
 			if (this.score > this.highScore) {
+				this.setHighScore(this.score)
 				if (!this.menuStarEmmiter.on) {
 					this.menuStarEmmiter.visible = true
 					this.menuStarEmmiter.start()
 				}
-				this.menuHighScoreText.setText(this.score)
 				this.setRainbowTint(this.menuHighScoreText)
 			} else {
 				this.resetColor(this.menuHighScoreText)
-				this.menuHighScoreText.setText(this.highScore)
 			}
+			this.starEmmiter.stop()
 			this.starEmmiter.visible = false
+			this.menuHighScoreText.setText(this.highScore)
 			this.menuScoreText.setText(this.score)
 			Utils.scaleOut(this.scene, {duration: 1000}, this.scoreText)
 			Utils.scaleOut(this.scene, {duration: 1000}, this.highScoreText)
-			Utils.scaleIn(this.scene, {delay: 200}, this.deathMenu, this.restartButton, this.menuButton, this.menuScoreText)
-			Utils.scaleIn(this.scene, {delay: 200, scale: this.score > this.highScore?1.5:1}, this.menuHighScoreText)
+			Utils.scaleIn(this.scene, {delay: 200}, null, this.deathMenu, this.restartButton, this.menuButton, this.menuScoreText)
+			Utils.scaleIn(this.scene, {delay: 200, scale: this.score > this.highScore?1.5:1}, null, this.menuHighScoreText)
 			this.scene.input.once('gameobjectdown', (pointer, objectHit) => {
 				if (objectHit === this.restartButton) {
 					this.restartButton.setFrame(1)
@@ -282,15 +283,12 @@ class UIManager extends FlappyState {
 		this.starEmmiter.stop()
 		this.starEmmiter.visible = false
 		this.resetColor(this.scoreText)
-		if (this.score > this.highScore) {
-			this.setHighScore(this.score)
-		}
 		this.setScore(0)
 		this.showControlsDialogue()
 		this.updateScoreText()
 		this.updateHighScoreText()
 		
-		Utils.scaleIn(this.scene, {}, this.highScoreText, this.scoreText)
+		Utils.scaleIn(this.scene, {}, null, this.highScoreText, this.scoreText)
 	}
 	
 	fadeScaleAnim(text, {delay = 0, duration = 1000, x = 0, easeParams = [4, 3], from={alpha:0, scale: 0.5}, to={alpha: 1, scale: 1, direction: '-'}}) {

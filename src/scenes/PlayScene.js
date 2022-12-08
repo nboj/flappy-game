@@ -94,7 +94,7 @@ class PlayScene extends Phaser.Scene {
         this.cityscape.setPosition(0, this.game.canvas.height - this.floor.getHeight())
         
         // CloudManager setup
-        this.cloudManager.verticalOffset = this.floor.getHeight() + this.cityscape.buildings.displayHeight
+        this.cloudManager.verticalOffset = this.floor.getHeight() + this.cityscape.background.displayHeight
         this.cloudManager.create()
         
         
@@ -295,12 +295,17 @@ class PlayScene extends Phaser.Scene {
      * to give the illusion of movement. And changes the game state.
      */
     handleDeath() {
-        this.currentState = States.DEAD
-        this.pipeManager.stopG()
-        this.cityscape.stopG()
-        this.floor.stopG()
-        this.cloudManager.stopG()
-        this.uiManager.stopG()
+        if (this.currentState !== States.DEAD) {
+            this.currentState = States.DEAD
+            this.cameras.main
+                .flash(400, 200, 200, 200)
+                .shake(300, 0.008)
+            this.pipeManager.stopG()
+            this.cityscape.stopG()
+            this.floor.stopG()
+            this.cloudManager.stopG()
+            this.uiManager.stopG()
+        }
     }
 }
 
