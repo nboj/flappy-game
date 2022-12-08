@@ -9,7 +9,6 @@ import UIManager from "../../PlayScene-classes/UIManager";
 
 import eventsCenter from "../../PlayScene-classes/EventsCenter";
 import {Difficulty} from "../../enums/States";
-import pipeManager from "../../PlayScene-classes/PipeManager";
 
 const States = {
     IDLE: 0,
@@ -55,9 +54,8 @@ class PlayScene extends Phaser.Scene {
         this.currentState = States.IDLE
         this.velocity = 200
         
-        
-        this.pipeManager = new PipeManager(this, {})
         // object instantiation
+        this.pipeManager = new PipeManager(this, {})
         this.bird = new Bird(this)
         this.floor = new Floor(this, {})
         this.cityscape = new Backdrop(this)
@@ -130,26 +128,44 @@ class PlayScene extends Phaser.Scene {
     
         /** dev only */
         // this.bird.enableGodMode()
+    
+        /**
+         * This is an event listener that will listen for the resetscene event. Once it is fired, if there is an object
+         * passed into it, then it means that MenuScene is trying to load to this scene which also means that a difficulty
+         * was passed in the parameters. It sets the class difficulty to the given one, and sets up the play scene in order
+         * to start the game loop.
+         */
         eventsCenter.on('resetscene', (e) => {
-            console.log('hi')
             if (e) {
+                // setting class difficulty variable
                 this.difficulty = e.difficulty
+                // setting uiManager difficulty
                 this.uiManager.difficulty = this.difficulty
                 this.setupPipeManager(e)
+                // removing previous collider events
                 this.colliders.map(collider => {
                     collider.destroy()
                 })
+                // removing previous overlap events
                 this.overlaps.map(overlap => {
                     overlap.destroy()
                 })
+                // resetting the arrays for the events
                 this.colliders.length = 0
                 this.overlaps.length = 0
+                // re-instantiating the overlap and collider events
                 this.handleCollisions()
+                // setup scene for game loop.\
                 this.restart()
             }
         })
     }
     
+    /**
+     * This method will setup the PipeManager object, created in the preloader method, and will set settings for it
+     * based on the difficulty passed with the difficulty parameter passed in.
+     * @param e - Difficulty that's passed from init or sceneloader
+     */
     setupPipeManager(e) {
         this.pipeManager.difficulty = e.difficulty
         const config = {
@@ -179,8 +195,7 @@ class PlayScene extends Phaser.Scene {
             config.horizontalOffset = 300
             config.velocityX = -this.velocity
         }
-        this.floor.velocity = this.velocity
-        console.log(this.velocity)
+        this.floor.velocity = this.velocity 
         this.pipeManager.setConfig(config)
     }
     

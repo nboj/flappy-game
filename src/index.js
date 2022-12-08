@@ -21,6 +21,7 @@ const config = {
         default: 'arcade',
         arcade: {
             // debug: true,
+            overlapBias: 8
         }
     },
     scene: [SceneLoader, MenuScene, PlayScene]

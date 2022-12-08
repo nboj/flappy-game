@@ -122,8 +122,6 @@ class PipeManager extends FlappyState {
 		}
 		this.preloadCreatePipes()
 		this.createPipes()
-		
-		
 	}
 	
 	/**
