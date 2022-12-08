@@ -3,6 +3,7 @@ import MenuScene from './scenes/MenuScene'
 import PlayScene from './scenes/PlayScene'
 import SceneLoader from "../helper-classes/SceneLoader";
 import Preload from "./scenes/Preload";
+import * as UIPlugin from '../helper-classes/rexuiplugin.min.js';
 
 /**
  * This is a configuration object for the actual game and it's properties.
@@ -21,8 +22,17 @@ const config = {
         default: 'arcade',
         arcade: {
             // debug: true,
-            overlapBias: 8
+            overlapBias: 10
         }
+    },
+    plugins: {
+        scene: [{
+            key: 'rexUI',
+            plugin: UIPlugin,
+            mapping: 'rexUI'
+        },
+            // ...
+        ]
     },
     scene: [SceneLoader, MenuScene, PlayScene]
     // scene: [PlayScene]

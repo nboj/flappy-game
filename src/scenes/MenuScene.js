@@ -4,10 +4,10 @@ import Bird from '../../PlayScene-classes/Bird'
 import Backdrop from "../../PlayScene-classes/Backdrop";
 import Floor from "../../PlayScene-classes/Floor";
 
-import WebFont from 'webfontloader'
 import eventsCenter from "../../PlayScene-classes/EventsCenter";
 import {Difficulty} from '../../enums/States'
 import Utils from "../../helper-classes/Utils";
+import CharacterCreator from "../../MenuScene-classes/CharacterCreator";
 
 /**
  * @classdesc Main menu scene for the game
@@ -46,6 +46,7 @@ class MenuScene extends Phaser.Scene {
 		this.floor = new Floor(this, {x: 0, y: 0})
 		this.background = new Backdrop(this)
 		this.floor.velocity = velocity
+		this.characterCreator = new CharacterCreator(this)
 		
 		// preloading
 		this.load.spritesheet('bird', 'assets/bird-spritesheet.png', {
@@ -61,6 +62,12 @@ class MenuScene extends Phaser.Scene {
 			frameWidth: this.playButtonSize.width
 		})
 		this.load.spritesheet('character-button', '/assets/character-selection-button.png', {
+			startFrame: 0,
+			endFrame: 1,
+			frameHeight: this.playButtonSize.height,
+			frameWidth: this.playButtonSize.width
+		})
+		this.load.spritesheet('back-button', '/assets/back-button.png', {
 			startFrame: 0,
 			endFrame: 1,
 			frameHeight: this.playButtonSize.height,
@@ -98,6 +105,7 @@ class MenuScene extends Phaser.Scene {
 		this.background.startingY = -this.game.canvas.height * 2
 		this.background.starCount = 50
 		this.background.preload()
+		this.characterCreator.preload()
 	}
 	
 	/**
@@ -106,6 +114,7 @@ class MenuScene extends Phaser.Scene {
 	 * and is used to create all the animations and UI the user will view and interact with.
 	 */
 	create() {
+		this.characterCreatorY = -this.game.canvas.height * 1.5
 		// setting up title text
 		this.titleText = this.add.text(this.game.canvas.width / 2, this.game.canvas.height / 2, 'Flappers', {fontFamily: 'FlappyFont, sans-serif', fontSize: '5.5vw'})
 		this.titleText.setShadow(0, 10, '#5e5e5e', 0, false, true)
@@ -116,6 +125,8 @@ class MenuScene extends Phaser.Scene {
 		// object creation
 		this.bird.create()
 		this.floor.create()
+		this.characterCreator.setup({bird: this.bird.bird})
+		this.characterCreator.create()
 		this.background.create()
 		this.background.setPosition(0, this.game.canvas.height - this.floor.getHeight())
 		this.floor.ground.displayHeight = this.game.canvas.height
@@ -140,7 +151,7 @@ class MenuScene extends Phaser.Scene {
 		this.playButton.setInteractive({cursor: 'pointer'})
 		this.playButton.y += this.titleText.displayHeight / 2 + this.offset / 2
 		
-		this.backButton = this.add.image(this.bird.bird.x, -((this.game.canvas.height * 1.5) - this.game.canvas.height / 4), 'play-button')
+		this.backButton = this.add.image(this.bird.bird.x, (this.characterCreatorY + this.game.canvas.height / 4), 'back-button')
 			.setDepth(10000)
 			.setScale(0)
 			.setAlpha(0)
@@ -188,6 +199,49 @@ class MenuScene extends Phaser.Scene {
 		eventsCenter.on('resetscene', (e) => {
 			if (!e) {
 				this.restartScene()
+			}
+		})
+		
+		/**
+		 * This.input.on('gameobjectdown') will execute the following callback function
+		 * whenever the play button is clicked by the user.
+		 */
+		this.input.on('gameobjectdown', (pointer, gameobject) => {
+			// sets the current frame of the play button to 1, which is an image of the button clicked down
+			if (gameobject === this.backButton) {
+				this.backButton.setFrame(1)
+			}
+		})
+		/**
+		 * this waits for the user to lift off of the button and will reset the button frame back to its original
+		 * frame
+		 */
+		this.input.on('gameobjectup', (pointer, gameobject) => {
+			if (gameobject === this.backButton) {
+				this.tweens.killAll()
+				this.backButton.setFrame(0)
+				this.cameras.main.zoomTo(1, 2000, "Sine.easeInOut")
+				this.floor.startG()
+				this.background.startG()
+				Utils.scaleOut(this, {from: {scale: 0.8, alpha: 1}}, this.backButton)
+				setTimeout(() => {
+					this.cameras.main.pan(this.cameras.main.centerX, this.game.canvas.height / 2, 1500, 'Sine.easeInOut', false, () => {
+						this.titleText
+							.setScale(0)
+							.setAlpha(0)
+						this.playButton
+							.setScale(0)
+							.setAlpha(0)
+						this.characterCustomizationButon
+							.setScale(0)
+							.setAlpha(0)
+						this.initiate()
+					})
+					setTimeout(() => {
+						this.bird.bird.play('fly-infinite')
+						this.animateBirdIn()
+					}, 1300)
+				}, 1000)
 			}
 		})
 		// sets up animations and everything for the menu scene.
@@ -287,22 +341,28 @@ class MenuScene extends Phaser.Scene {
 		 */
 		this.input.once('gameobjectdown', (pointer, gameobject) => {
 			// sets the current frame of the play button to 1, which is an image of the button clicked down
-			gameobject.setFrame(1)
+			if (gameobject === this.playButton || gameobject === this.easyButton || gameobject === this.mediumButton || gameobject === this.hardButton || gameobject === this.insaneButton || gameobject === this.characterCustomizationButon) {
+				gameobject.setFrame(1)
+			}
 		})
 		/**
 		 * this waits for the user to lift off of the button and will reset the button frame back to its original
 		 * frame
 		 */
-		this.input.once('gameobjectup', (pointer, gameobject) => {
+		const stopMenuButtonAnimations = (gameobject) => {
 			gameobject.setFrame(0)
 			playButtonTween.stop()
 			characterCustomizationButtonTween.stop()
+		}
+		this.input.once('gameobjectup', (pointer, gameobject) => {
 			if (gameobject === this.playButton) {
+				stopMenuButtonAnimations(gameobject)
 				const tween = this.animateMenuOut()
 				tween.on('complete', () => {
 					this.createDifficultyButtons()
 				})
 			} else if (gameobject === this.characterCustomizationButon) {
+				stopMenuButtonAnimations(gameobject)
 				this.onCharacterCustomizationButtonHit()
 			}
 		})
@@ -353,35 +413,6 @@ class MenuScene extends Phaser.Scene {
 				this.bird.bird.setFrame(1)
 			}, 2200)
 			
-			this.input.once('gameobjectdown', (pointer, gameobject) => {
-				this.backButton.setFrame(1)
-			})
-			this.input.once('gameobjectup', (pointer, gameobject) => {
-				this.tweens.killAll()
-				this.backButton.setFrame(0)
-				this.cameras.main.zoomTo(1, 2000, "Sine.easeInOut")
-				this.floor.startG()
-				this.background.startG()
-				Utils.scaleOut(this, {from: {scale: 0.8, alpha: 1}}, this.backButton)
-				setTimeout(() => {
-					this.cameras.main.pan(this.cameras.main.centerX, this.game.canvas.height / 2, 1500, 'Sine.easeInOut', false, () => {
-						this.titleText
-							.setScale(0)
-							.setAlpha(0)
-						this.playButton
-							.setScale(0)
-							.setAlpha(0)
-						this.characterCustomizationButon
-							.setScale(0)
-							.setAlpha(0)
-						this.initiate()
-					})
-					setTimeout(() => {
-						this.bird.bird.play('fly-infinite')
-						this.animateBirdIn()
-					}, 1300)
-				}, 1000)
-			})
 		})
 	}
 	animateBirdIn() {
