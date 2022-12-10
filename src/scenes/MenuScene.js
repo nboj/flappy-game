@@ -246,6 +246,11 @@ class MenuScene extends Phaser.Scene {
 		})
 		// sets up animations and everything for the menu scene.
 		this.initiate()
+		if(!this.loaded) {
+			this.loaded = true
+			console.log('innintisn')
+			eventsCenter.emit('loaded')
+		}
 	}
 	
 	initiate() {

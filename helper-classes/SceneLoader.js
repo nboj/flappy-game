@@ -11,7 +11,8 @@ import WebFont from "webfontloader";
 class SceneLoader extends Phaser.Scene {
 	constructor() {
 		super('SceneLoader')
-		this.animateOnLoad = false
+		this.animateOnLoad = true
+		this.useInitialEvent = true
 		this.startScene = 'MenuScene'
 	}
 	
@@ -23,6 +24,9 @@ class SceneLoader extends Phaser.Scene {
 		// event listeners
 		eventsCenter.on('loadscene', (e) => {
 			this.loadScene(e)
+		})
+		eventsCenter.on('loaded', () => {
+			this.onLoaded()
 		})
 	}
 	
@@ -52,7 +56,7 @@ class SceneLoader extends Phaser.Scene {
 				this.overlayText.setOrigin(0.5, 0.5)
 				this.overlayText.depth = 30001
 				
-				if (!this.animateOnLoad) {
+				if (!this.useInitialEvent) {
 					this.overlay.x -= this.overlay.displayWidth
 					this.overlayText.x = -this.game.canvas.width
 				}
@@ -61,6 +65,8 @@ class SceneLoader extends Phaser.Scene {
 	}
 	
 	onLoaded() {
+		if (this.useInitialEvent)
+			this.useInitialEvent = false
 		if (this.animateOnLoad) {
 			/**
 			 * this animation is the background of the loading screen
@@ -75,9 +81,6 @@ class SceneLoader extends Phaser.Scene {
 	
 	loadScene(e) {
 		this.tweens.killAll()
-		if (!this.animateOnLoad) {
-			this.animateOnLoad = true
-		}
 		
 		const animation = this.animateX(this.overlay, {x: -100, duration: 2000, easeParams: [1, 3]})
 		this.animateX(this.overlayText, {x: this.game.canvas.width / 2, duration: 2000, easeParams: [1, 3]})
@@ -87,10 +90,11 @@ class SceneLoader extends Phaser.Scene {
 			e.currentScene.run(e.sceneToLoad, e.data)
 			e.currentScene.sleep()
 			this.scene.get(e.sceneToLoad).events.once('render', () => {
-			eventsCenter.emit('resetscene', e.data)
-				setTimeout(() => {
-					this.onLoaded()
-				}, 1000)
+				eventsCenter.emit('resetscene', e.data)
+				if (!this.useInitialEvent)
+					setTimeout(() => {
+						this.onLoaded()
+					}, 1000)
 			})
 		})
 	}

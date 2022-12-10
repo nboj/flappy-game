@@ -159,6 +159,7 @@ class PlayScene extends Phaser.Scene {
                 this.restart()
             }
         })
+        eventsCenter.emit('loaded')
     }
     
     /**
