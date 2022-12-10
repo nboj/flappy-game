@@ -165,7 +165,16 @@ class PipeManager extends FlappyState {
 			this.pipes.push(pipe)
 		}
 	}
-	
+	/**
+	 * Originally inside the setupPipePositions(pipe, index) method, however, this could be used
+	 * in other places. This method will get the position of the last element in the array if the
+	 * index isn't 0. It will use the previous pipe's position plus the horizontal offset as a new x position.
+	 * If it is the first index, being 0, then it will just set the position to whatever
+	 * the class starting position variable holds. Then it gets a new y position and returns both the x and y
+	 * variables inside an object.
+	 * @param index - the index of the current pipe to reposition
+	 * @returns {{x: *, y: number}} - new x and y positions to use for a pipe
+	 */
 	getNewPipePosition(pipe, index) {
 		// generating new pipe positions x and y
 		if (this.currentHorizontalOffset > this.finalHorizontalOffset)
@@ -287,11 +296,10 @@ class PipeManager extends FlappyState {
 	 * remove the first element from the PipeGroup array, and appends it to the end. It also
 	 * positions the pipe to a new position relative to the previous last element and the
 	 * horizontal offset
-	 * @param pipe - current pipe being reset
 	 */
-	handleResetPipe(pipe, index) {
+	handleResetPipe() {
 		// removes the first element from the PipeGroup array
-		this.pipes.shift()
+		const pipe = this.pipes.shift()
 		// sets the new position for the pipe taking into account the horizontal axis
 		this.setupPipePositions(pipe, this.pipes.length)
 		// appending the pipe to the end of the PipeGroup array
