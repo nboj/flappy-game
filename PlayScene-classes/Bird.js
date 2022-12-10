@@ -87,13 +87,14 @@ class Bird extends FlappyState {
 		this.bird.body
 			.setCircle(Math.round(this.bird.body.sourceWidth / 3), this.bird.body.sourceWidth/4, this.bird.body.sourceWidth/20)
 			.setMass(100)
-			.setBounce(0.5, 0.5)
+			.setBounce(0, 0)
 			.setAccelerationY(-10)
 			.setMaxVelocityY(700)
 			.setGravityY(2800)
 			.setAllowGravity(false)
 			.setAllowRotation(true)
 			.setDragX(300)
+			.setFrictionY(1)
 	}
 	
 	/**

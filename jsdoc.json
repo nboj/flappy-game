@@ -1,0 +1,7 @@
+{
+  "source": ["./src"],
+  "opts": "utf8",
+  "readme": "./README.md",
+  "recurse": true,
+  "verbose": true,
+}
