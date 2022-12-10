@@ -36,6 +36,19 @@ class PlayScene extends Phaser.Scene {
         this.velocity = 200
         this.colliders = []
         this.overlaps = []
+        const scores = JSON.parse(localStorage.getItem('top-scores'))
+        if (scores) {
+            this.topScores = scores
+            console.log(scores)
+            console.log(this.topScores)
+        } else {
+            this.topScores = {
+                easy: 0,
+                medium: 0,
+                hard: 0,
+                insane: 0
+            }
+        }
     }
     
     init(data) {
@@ -61,7 +74,7 @@ class PlayScene extends Phaser.Scene {
         this.cityscape = new Backdrop(this)
         this.cityscape.velocity = this.velocity
         this.cloudManager = new CloudManager(this)
-        this.uiManager = new UIManager(this, this.difficulty)
+        this.uiManager = new UIManager(this, this.difficulty, this.topScores)
         
         // preload calls
         this.bird.preload()
@@ -129,6 +142,7 @@ class PlayScene extends Phaser.Scene {
         /** dev only */
         // this.bird.enableGodMode()
     
+        this.setHighScores(this.difficulty)
         /**
          * This is an event listener that will listen for the resetscene event. Once it is fired, if there is an object
          * passed into it, then it means that MenuScene is trying to load to this scene which also means that a difficulty
@@ -137,6 +151,8 @@ class PlayScene extends Phaser.Scene {
          */
         eventsCenter.on('resetscene', (e) => {
             if (e) {
+                this.updateTopScores()
+                this.setHighScores(e.difficulty)
                 // setting class difficulty variable
                 this.difficulty = e.difficulty
                 // setting uiManager difficulty
@@ -272,6 +288,43 @@ class PlayScene extends Phaser.Scene {
         this.uiManager.resetG()
     }
     
+    updateTopScores() {
+        switch (this.difficulty) {
+            case Difficulty.EASY:
+                this.topScores.easy = this.uiManager.highScore
+                break
+            case Difficulty.MEDIUM:
+                this.topScores.medium = this.uiManager.highScore
+                break
+            case Difficulty.HARD:
+                this.topScores.hard = this.uiManager.highScore
+                break
+            case Difficulty.INSANE:
+                this.topScores.insane = this.uiManager.highScore
+                break
+        }
+        localStorage.setItem('top-scores', JSON.stringify(this.topScores))
+    }
+    
+    setHighScores(difficulty) {
+        console.log(difficulty)
+        console.log(this.topScores.medium)
+        switch (difficulty) {
+            case Difficulty.EASY:
+                this.uiManager.setHighScore(this.topScores.easy)
+                break
+            case Difficulty.MEDIUM:
+                this.uiManager.setHighScore(this.topScores.medium)
+                break
+            case Difficulty.HARD:
+                this.uiManager.setHighScore(this.topScores.hard)
+                break
+            case Difficulty.INSANE:
+                this.uiManager.setHighScore(this.topScores.insane)
+                break
+        }
+    }
+    
     /**
      * Starting the game by calling all the start methods needed
      */
@@ -321,6 +374,7 @@ class PlayScene extends Phaser.Scene {
             this.floor.stopG()
             this.cloudManager.stopG()
             this.uiManager.stopG()
+            this.updateTopScores()
         }
     }
 }
