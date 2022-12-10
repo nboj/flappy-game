@@ -16,6 +16,7 @@ const States = {
  * have a difficulty ramp as well as difficulty settings.
  * @author Christian P. Auman
  * @class
+ * @memberOf module:PlayScene
  */
 class PipeManager extends FlappyState {
 	/**

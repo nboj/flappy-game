@@ -6,6 +6,7 @@ import {Difficulty} from "../enums/States";
  * flappy bird game. And paired with an array, you can easily create an infinite pool of
  * these PipeGroup objects through recycling
  * @author Christian P. Auman
+ * @memberOf module:PlayScene
  * @class
  */
 class PipeGroup {

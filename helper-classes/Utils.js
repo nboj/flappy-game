@@ -4,6 +4,7 @@
  * of code written and really helps readability which further helps development.
  * @author Christian P. Auman
  * @class
+ * @memberOf module:HelperClasses
  */
 class Utils {
 	/**

@@ -1,6 +1,10 @@
 import Phaser from 'phaser'
 import hexToHsl from 'hex-to-hsl'
 
+/**
+ * @class
+ * @memberOf module:MenuScene
+ */
 class CharacterCreator {
 	constructor(scene) {
 		this.scene = scene

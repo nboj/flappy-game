@@ -16,6 +16,7 @@ import CharacterCreator from "../../MenuScene-classes/CharacterCreator";
  * This scene is used for the main menu navigation and animation.
  * @author Christian P. Auman
  * @class
+ * @module MenuScene
  */
 class MenuScene extends Phaser.Scene {
 	constructor() {

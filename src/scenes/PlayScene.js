@@ -17,12 +17,12 @@ const States = {
 }
 
 /**
- * @classdesc - This manages/updates/creates/etc. every object and manager in the game.
- * This class is vital to the game and without it, the game wouldn't run. This class is a child of the Phaser.Scene
- * class which allows for overriding methods such as preload, create, and update. It also allows for easy access of different
- * Phaser objects in the game since it inherits them from the Phaser.Scene class.
+ * @classdesc This manages/updates/creates/etc. every object and manager in the game. This class is vital to the game and without it, the game wouldn't run. This class is a child of the Phaser.Scene
+  class which allows for overriding methods such as preload, create, and update. It also allows for easy access of different
+  Phaser objects in the game since it inherits them from the Phaser.Scene class.
  * @author Christian P. Auman
  * @class
+ * @module PlayScene
  */
 class PlayScene extends Phaser.Scene {
     /**
@@ -175,7 +175,7 @@ class PlayScene extends Phaser.Scene {
                 this.restart()
             }
         })
-        eventsCenter.emit('loaded') 
+        eventsCenter.emit('loaded')
     }
     
     /**

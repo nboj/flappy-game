@@ -11,6 +11,7 @@ const States = {
  * player movement and animations.
  * @classdesc This is the game object representing the player.
  * @author Christian P. Auman
+ * @memberOf module:PlayScene
  * @class
  */
 class Bird extends FlappyState {

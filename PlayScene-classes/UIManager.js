@@ -9,6 +9,10 @@ const States = {
 	PAUSED: 2
 }
 
+/**
+ * @class
+ * @memberOf module:PlayScene
+ */
 class UIManager extends FlappyState {
 	constructor(scene, difficulty) {
 		super(States.IDLE)

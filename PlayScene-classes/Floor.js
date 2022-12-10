@@ -11,6 +11,7 @@ const States = {
  * This class is used to easily manage and manipulate the floor. It will animate the tilesprite's X position in the update method.
  * @author Christian P. Auman
  * @class
+ * @memberOf module:PlayScene
  */
 class Floor extends FlappyState {
 	/**

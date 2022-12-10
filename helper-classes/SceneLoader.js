@@ -7,6 +7,7 @@ import WebFont from "webfontloader";
  * @classdesc
  * @author Christian P. Auman
  * @class
+ * @module HelperClasses
  */
 class SceneLoader extends Phaser.Scene {
 	constructor() {

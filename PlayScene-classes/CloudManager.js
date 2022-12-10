@@ -12,6 +12,7 @@ const States = {
  * added on to give a more organic look and feel.
  * @author Christian P. Auman
  * @class
+ * @memberOf module:PlayScene
  */
 class CloudManager extends FlappyState {
 	/**

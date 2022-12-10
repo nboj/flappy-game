@@ -12,6 +12,7 @@ const States = {
  * This class is used to create, manage, and manipulate the environment for the game.
  * @author Christian P. Auman
  * @class
+ * @memberOf module:PlayScene
  */
 class Backdrop extends FlappyState {
 	/**

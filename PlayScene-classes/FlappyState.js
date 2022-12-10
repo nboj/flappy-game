@@ -1,3 +1,7 @@
+/**
+ * @class
+ * @memberOf module:PlayScene
+ */
 class FlappyState {
 	constructor(currentState) {
 		this.currentState = currentState
