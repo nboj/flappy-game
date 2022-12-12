@@ -1,6 +1,7 @@
 /**
- * @class
+ * @author Christian P. Auman
  * @memberOf module:PlayScene
+ * @class
  */
 class FlappyState {
 	constructor(currentState) {

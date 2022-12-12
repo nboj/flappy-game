@@ -10,8 +10,9 @@ const States = {
 }
 
 /**
- * @class
+ * @author Christian P. Auman
  * @memberOf module:PlayScene
+ * @class
  */
 class UIManager extends FlappyState {
 	constructor(scene, difficulty) {
