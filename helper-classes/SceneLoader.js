@@ -82,7 +82,6 @@ class SceneLoader extends Phaser.Scene {
 	
 	loadScene(e) {
 		this.tweens.killAll()
-		
 		const animation = this.animateX(this.overlay, {x: -100, duration: 2000, easeParams: [1, 3]})
 		this.animateX(this.overlayText, {x: this.game.canvas.width / 2, duration: 2000, easeParams: [1, 3]})
 		

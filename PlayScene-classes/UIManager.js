@@ -284,6 +284,11 @@ class UIManager extends FlappyState {
 		
 		this.menuStarEmmiter.stop()
 		this.menuStarEmmiter.visible = false
+		this.deathMenu.scale = 0
+		this.menuScoreText.scale = 0
+		this.menuHighScoreText.scale = 0
+		this.menuButton.scale = 0
+		this.restartButton.scale = 0
 		
 		this.starEmmiter.stop()
 		this.starEmmiter.visible = false
