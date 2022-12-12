@@ -141,7 +141,7 @@ class Bird extends FlappyState {
 		// checking to see if the bird's body has hit a boundary
 		this.checkBoundaries()
         if (super.getCurrentState() === States.ALIVE) {
-			this.handleTilt(time)
+			this.handleTilt(time, delta)
         } else if (super.getCurrentState() === States.DEAD) {
         } else if (super.getCurrentState() === States.IDLE) {
 		}
@@ -188,20 +188,20 @@ class Bird extends FlappyState {
 	 * This method is for rotating the bird to simulate a more organic movement.
 	 * @param time - the time from when the game started.
 	 */
-	handleTilt(time) {
+	handleTilt(time, delta) {
 		// if 600 milliseconds has passed from when the bird last jumped, it will start rotating the
 		// bird facing the ground.
 		if (time - this.tiltDelayStart > 500) {
 			if (this.bird.rotation <= 1) {
-				this.bird.rotation += 0.1
-				this.bird.body.rotation += 0.1
+				this.bird.rotation += 0.006 * delta
+				this.bird.body.rotation += 0.006 * delta
 			}
 		// If the bird has jumped and the rotation has not met the max of -0.45, it will rotate the bird
 		// back up until it reaches -0.45
 		} else {
 			if (this.bird.rotation >= -0.45) {
-				this.bird.rotation -= 0.2
-				this.bird.body.rotation -= 0.2
+				this.bird.rotation -= 0.008 * delta
+				this.bird.body.rotation -= 0.008 * delta
 			}
 		}
 	}
