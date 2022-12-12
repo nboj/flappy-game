@@ -45,6 +45,10 @@ class UIManager extends FlappyState {
 		}
 	}
 	
+	/**
+	 * preload() is a method that is called at the start which allows for loading images and assets that
+	 * are needed in the game before use.
+	 */
 	preload() {
 		window.addEventListener('checkpoint', () => {
 			this.addPoint()
@@ -65,33 +69,43 @@ class UIManager extends FlappyState {
 		})
 	}
 	
+	/**
+	 * creates and initializes the score, highscore, scoretext, and highscoretext gameobjects
+	 */
 	setupScore() {
+		// setting the starting position for the ui to base off of
 		this.startPos = {
 			x: this.scene.game.canvas.width / 2,
 			y: this.scene.game.canvas.height / 4
 		}
+		// creating the score tet ui
 		this.scoreText = this.scene.add.text(this.startPos.x, this.startPos.y, 'a', {
 			fontFamily: 'FlappyFont',
 			fontSize: '100px',
 			strokeThickness: 5,
 			stroke: 'black'
 		})
+		// setting initial values for the score text
 		this.scoreText.depth = this.depth
 		this.scoreText.setOrigin(0.5, 0.5)
+		// updating the value and position of the score text
 		this.updateScoreText()
-		
+		// creating the highscore text ui
 		this.highScoreText = this.scene.add.text(this.startPos.x, this.startPos.y, 'a', {
 			fontFamily: 'FlappyFont',
 			fontSize: '50px',
 			strokeThickness: 5,
 			stroke: 'black'
 		})
+		// setting up the initial values for the highscore text ui
 		this.highScoreText.depth = this.depth
 		this.highScoreText.setOrigin(0.5, 0.5)
+		// initial size for the score text
 		this.scoreSize = {
 			width: this.scoreText.displayWidth,
 			height: this.scoreText.displayHeight
 		}
+		// updating the value and position of the highscore text
 		this.updateHighScoreText()
 	}
 	
