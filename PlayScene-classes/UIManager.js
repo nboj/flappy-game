@@ -10,6 +10,8 @@ const States = {
 }
 
 /**
+ * @classdesc This class is a usuful tool to manipulate, create, and hide the user interface display.
+ * It controls the score, highscore, and all menus in the main game.
  * @author Christian P. Auman
  * @memberOf module:PlayScene
  * @class
